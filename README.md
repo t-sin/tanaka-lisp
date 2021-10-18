@@ -100,17 +100,19 @@ It's a embeddable Lisp. Dedicated with [Hajime Tanaka](https://oddtaxi.fandom.co
 (setq *parent-object*
   #{:*super* #{}
     :method-parent (lambda (self) (print "Ku!"))})
+; => #{...}
 
 (setq *child-object*
   #{:*super* *parent-object*
     :method-child (lambda (self)
                     (method-parent self)
                     (print "Kyu!!"))})
+; => #{...}
 
 (method-parent *parent-object*)
 ; => Ku!
 
 (method-parent *child-object*)
 ; => Ku!
-     Kyu!!
+;    Kyu!!
 ```
