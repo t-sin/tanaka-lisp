@@ -4,33 +4,28 @@ An embeddable Lisp. Dedicated with [him](https://oddtaxi.fandom.com/wiki/Hajime_
 
 ## features
 
-- basic features
-    - lexical bindings
-    - without dynamic bindings
-    - rest arguments
-    - no optional, keyword arguments
+- lexical bindings, without dynamic bindings
+- rest arguments, without optional and keyword arguments
+- multiple values
+- object oriented programming
+    - meta hash table
+    - Lua style
+- Java-style error handling
 - data types
     - integers
     - floating point numbers
     - strings
     - arrays
     - hash table
-- object oriented programming
-    - meta hash table
-    - Lua style
 - control flow
     - tagbody/go
     - block/return
 - macro system
-- math functions
-    - for basic sound processing
 - I/O streams
     - binary streams
     - character streams
-- multiple values
-- Go style error system
 
-## goals
+## goals?
 
 - real-time sound generation with `play` command
 - describing danmaku system
