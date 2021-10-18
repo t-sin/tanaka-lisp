@@ -87,7 +87,7 @@ An embeddable Lisp. Dedicated with [him](https://oddtaxi.fandom.com/wiki/Hajime_
     (when (null err)
       (return-from open-file))
     (read-line in)))
-; => "tanaka-lisp" nil
+; => "# tanaka-lisp" nil
 ```
 
 ```lisp
