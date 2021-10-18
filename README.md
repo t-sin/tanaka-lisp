@@ -4,12 +4,16 @@ An embeddable Lisp. Dedicated with [him](https://oddtaxi.fandom.com/wiki/Hajime_
 
 ## features
 
+- basic features
+    - lexical bindings
+    - without dynamic bindings
+    - rest arguments
+    - no optional, keyword arguments
 - data types
     - integers
     - floating point numbers
     - strings
     - arrays
-    - structures
     - hash table
 - object oriented programming
     - meta hash table
@@ -41,24 +45,36 @@ An embeddable Lisp. Dedicated with [him](https://oddtaxi.fandom.com/wiki/Hajime_
 ```lisp
 ;; function definition example
 ;; square wave generator
-(defun pulse (ph duty)
+(dfn pulse (ph duty)
   (if (> ph duty)
-      1
-      0))
+      1.0
+      0.0))
+```
+
+```lisp
+;; I/O example
+(with-open-file (in "README.md" :input :text)
+  (read-line in))
+; => "# tanaka-lisp" nil
 ```
 
 ```lisp
 ;; error handling example
 (defun div (a b)
   (if (= b 0)
-    (values 0 "division by zero")
-    (values (/ a b) nil)))
+    (error "division by zero")
+    (/ a b)))
 
 (div 10 5)
-; => 2 nil
+; => 2
 
 (div 10 0)
-; => nil "division by zero"
+; => #<error "division by zero">
+
+(try
+    (div 10 0)
+  ((arithmetic-error (_) (print "division by zero"))))
+; => division by zero
 ```
 
 ```lisp
@@ -68,26 +84,19 @@ An embeddable Lisp. Dedicated with [him](https://oddtaxi.fandom.com/wiki/Hajime_
   (print quotient))
 ; => 2
 
+;; destructuring binding
+(bind ((car . cdr) ; destructuring pattern
+       2nd)
+    (values (list 1 2) #t)
+  (print (list car cdr 2nd)))
+; => (1 2 #t)
+
 ;; `bind` is a macro.
-;; I want it to cover a feature of `destructuring-bind` macro, or `match` macro?
-;; multiple-value example is expanded as like this:
+;; the multiple-value example is expanded as like this:
 (multiple-value-call
-  (lambda (&optional quotient err &rest _)
+  (lambda (quotient err)
     (print quotient))
   (div 10 5))
-```
-
-```lisp
-;; I/O example
-(block open-file
-  (with-open-file (in "README.md"
-                   :direction :input
-                   :type :text
-                   :error err)
-    (when (null err)
-      (return-from open-file))
-    (read-line in)))
-; => "# tanaka-lisp" nil
 ```
 
 ```lisp
