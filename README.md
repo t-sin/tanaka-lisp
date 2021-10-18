@@ -1,6 +1,6 @@
 # tanaka-lisp
 
-It's a embeddable Lisp. Dedicated with [Hajime Tanaka](https://oddtaxi.fandom.com/wiki/Hajime_Tanaka).
+An embeddable Lisp. Dedicated with [him](https://oddtaxi.fandom.com/wiki/Hajime_Tanaka).
 
 ## features
 
