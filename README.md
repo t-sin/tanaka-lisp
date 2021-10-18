@@ -98,20 +98,20 @@ An embeddable Lisp. Dedicated with [him](https://oddtaxi.fandom.com/wiki/Hajime_
 ;; class is a hash table that has a hash table named as `*super*`
 (setq *parent-object*
   #{:*super* #{}
-    :method-parent (lambda (self) (print "Ku!"))})
+    :method (lambda (self) (print "Ku!"))})
 ; => #{...}
 
 (setq *child-object*
   #{:*super* *parent-object*
-    :method-child (lambda (self)
-                    (method-parent self)
+    :method (lambda (self)
+                    (send :method (gethash :*super* self))
                     (print "Kyu!!"))})
 ; => #{...}
 
-(send :method-parent *parent-object*)
+(send :method *parent-object*)
 ; => Ku!
 
-(send :method-parent *child-object*)
+(send :method *child-object*)
 ; => Ku!
 ;    Kyu!!
 ```
