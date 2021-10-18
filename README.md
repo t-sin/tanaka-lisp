@@ -45,7 +45,7 @@ An embeddable Lisp. Dedicated with [him](https://oddtaxi.fandom.com/wiki/Hajime_
 ```lisp
 ;; function definition example
 ;; square wave generator
-(dfn pulse (ph duty)
+(defun pulse (ph duty)
   (if (> ph duty)
       1.0
       0.0))
@@ -104,16 +104,16 @@ An embeddable Lisp. Dedicated with [him](https://oddtaxi.fandom.com/wiki/Hajime_
 
 ;; creating classes
 ;; `#{}` is a hash table literal
-;; class is a hash table that has a hash table named as `*super*`
+;; class is a hash table that has a hash table named as `*meta*`
 (setq *parent-object*
-  #{:*super* #{}
+  #{:*meta* #{}
     :method (lambda (self) (print "Ku!"))})
 ; => #{...}
 
 (setq *child-object*
-  #{:*super* *parent-object*
+  #{:*meta* *parent-object*
     :method (lambda (self)
-                    (send :method (gethash :*super* self))
+                    (send :method (gethash :*meta* self))
                     (print "Kyu!!"))})
 ; => #{...}
 
