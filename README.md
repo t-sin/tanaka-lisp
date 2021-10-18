@@ -92,7 +92,6 @@ It's a embeddable Lisp. Dedicated with [Hajime Tanaka](https://oddtaxi.fandom.co
 
 ```lisp
 ;; object oriented programming example
-;; (hmm I want generic functions...)
 
 ;; creating super class
 ;; `#{}` is a hash table literal
@@ -109,10 +108,10 @@ It's a embeddable Lisp. Dedicated with [Hajime Tanaka](https://oddtaxi.fandom.co
                     (print "Kyu!!"))})
 ; => #{...}
 
-(method-parent *parent-object*)
+(call :method-parent *parent-object*)
 ; => Ku!
 
-(method-parent *child-object*)
+(call :method-parent *child-object*)
 ; => Ku!
 ;    Kyu!!
 ```
