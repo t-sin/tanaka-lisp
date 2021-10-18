@@ -93,7 +93,7 @@ An embeddable Lisp. Dedicated with [him](https://oddtaxi.fandom.com/wiki/Hajime_
 ```lisp
 ;; object oriented programming example
 
-;; creating super class
+;; creating classes
 ;; `#{}` is a hash table literal
 ;; class is a hash table that has a hash table named as `*super*`
 (setq *parent-object*
@@ -108,10 +108,10 @@ An embeddable Lisp. Dedicated with [him](https://oddtaxi.fandom.com/wiki/Hajime_
                     (print "Kyu!!"))})
 ; => #{...}
 
-(call :method-parent *parent-object*)
+(send :method-parent *parent-object*)
 ; => Ku!
 
-(call :method-parent *child-object*)
+(send :method-parent *child-object*)
 ; => Ku!
 ;    Kyu!!
 ```
