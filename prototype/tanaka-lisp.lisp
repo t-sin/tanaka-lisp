@@ -9,14 +9,15 @@
                 :defun
                 :if
                 :lambda
-                :setq)
+                :setq
+                :&rest)
   (:export))
 (in-package :tanaka-lisp)
 
 (cl:defun get (hash-table key)
   (cl:gethash key hash-table))
 
-(cl:defun println (str cl:&rest args)
+(cl:defun println (str &rest args)
   (cl:apply #'cl:format cl:t str args)
   (cl:values))
 
@@ -31,7 +32,7 @@
        (cl:lambda (,@values) ,@body)
      ,form))
 
-(cl:defun hash (cl:&rest contents)
+(cl:defun hash (&rest contents)
   (cl:loop
     :with ht := (cl:make-hash-table)
     :for (key val) :on contents :by #'cl:cddr
@@ -63,7 +64,7 @@
 (cl:define-condition unknown-message (cl:error)
   ((msg) (args)))
 
-(cl:defun send (message object cl:&rest args)
+(cl:defun send (message object &rest args)
   (cl:unless (object-p object)
     (error (cl:format cl:nil "~s is not an object" object)))
   (cl:let ((method (cl:gethash message object)))
