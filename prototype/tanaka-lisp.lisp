@@ -47,7 +47,7 @@
 (cl:set-dispatch-macro-character #\# #\{ 'read-hash-table)
 (cl:set-macro-character #\} (cl:get-macro-character #\)) cl:nil)
 
-(cl:defmethod cl:print-object ((ht cl:hash-table) stream)
+(cl:defun %print-hash-table (ht stream)
   (cl:format stream "#{")
   (cl:loop
     :with first-p := cl:t
@@ -60,6 +60,11 @@
   (cl:and (cl:hash-table-p obj)
           (cl:gethash :*meta* obj nil)
           (cl:hash-table-p (cl:gethash :*meta* obj))))
+
+(cl:defmethod cl:print-object ((ht cl:hash-table) stream)
+  (if (object-p ht)
+      (cl:format stream "#<object:~a>" (get (get ht :*meta*) :name))
+      (%print-hash-table ht stream))))
 
 (cl:define-condition unknown-message (cl:error)
   ((msg) (args)))
