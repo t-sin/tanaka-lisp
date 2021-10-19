@@ -21,3 +21,13 @@
 (send :say *dodo*)
 ; => Animal!
 ;    Dodo!!
+
+
+;; Smalltalk's `doesNotUnderstand`
+;; or Ruby's `method_missing`
+(setq obj #{:*meta* #{:parent nil}
+            :unknown-message (lambda (self msg &rest args)
+                               (cl:format t "unknown message ~s with args: ~s" msg args))})
+
+(send :hoge obj 1 2)
+; => unknown message :hoge with args (1 2)
