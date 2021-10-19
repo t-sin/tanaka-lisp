@@ -70,6 +70,20 @@
           (cl:gethash :*meta* obj nil)
           (cl:hash-table-p (cl:gethash :*meta* obj))))
 
+(cl:defun find-message (name object)
+  (cl:unless (object-p object)
+    (error (cl:format cl:nil "~s is not an object" object)))
+  (cl:unless (cl:keywordp name)
+    (error (cl:format cl:nil "~s is not a keyword" name)))
+  (cl:let ((method (cl:gethash name object)))
+    (cl:if method
+           (cl:values method object)
+           (cl:let* ((meta (get object :*meta*))
+                     (parent (get meta :parent)))
+             (cl:if parent
+                    (find-message name parent)
+                    nil)))))
+
 ;; NOTE: this OVERRIDE same message of its parent
 (cl:defmacro define-message (name obj (&rest args) cl:&body body)
   `(cl:setf (cl:gethash (cl:intern (cl:symbol-name ',name) :keyword) ,obj)
@@ -78,7 +92,7 @@
 (cl:defmethod cl:print-object ((ht cl:hash-table) stream)
   (if (object-p ht)
       (cl:format stream "#<object:~a>" (get (get ht :*meta*) :name))
-      (%print-hash-table ht stream))))
+      (%print-hash-table ht stream)))
 
 (cl:define-condition unknown-message (cl:error)
   ((msg) (args)))
@@ -86,17 +100,12 @@
 (cl:defun send (message object &rest args)
   (cl:unless (object-p object)
     (error (cl:format cl:nil "~s is not an object" object)))
-  (cl:let ((method (cl:gethash message object)))
-    (cl:if method
-           (cl:apply method object args)
-           (cl:let* ((meta (get object :*meta*))
-                     (parent (get meta :parent)))
-             (cl:if parent
-                    (try
-                        (cl:apply #'send message parent args)
-                      (unknown-message (e)
-                                       (cl:let ((unknown-message (get object :unknown-message)))
-                                         (cl:if unknown-message
-                                                (cl:apply #'send :unknown-message object message args)
-                                                (error e)))))
-                    (error (cl:make-condition 'unknown-message :msg message :args args)))))))
+  (bind (msg-fn obj)
+      (find-message message object)
+    (if msg-fn
+        (cl:apply msg-fn obj args)
+        (bind (msg-fn obj)
+            (find-message :unknown-message object)
+          (if msg-fn
+              (cl:apply #'send :unknown-message obj args)
+              (error (cl:make-condition 'unknown-message :msg message :args args)))))))
