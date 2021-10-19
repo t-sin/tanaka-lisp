@@ -33,8 +33,11 @@
 ; => unknown message :hoge with args (1 2)
 
 ;; utilities
-(make-object child *parent-object*)
-; => #{:*meta* #{:name :child :parent *parent-object*}}
+(make-object :dodo *parent-object*)
+; => #{:*meta* #{:name :dodo :parent *parent-object*}}
 
-(define-message say obj (name)
-  (println "say {}!" name))
+(define-message say dodo ()
+  (println "say dodo!"))
+
+(send :say dodo)
+; => say dodo!
