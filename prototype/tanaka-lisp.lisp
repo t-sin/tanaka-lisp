@@ -4,13 +4,17 @@
                 :>
                 :=
                 :/
+                :nil
+                :t
                 :defun
                 :if
                 :lambda
-                :setq
-                :gethash)
+                :setq)
   (:export))
 (in-package :tanaka-lisp)
+
+(cl:defun get (hash-table key)
+  (cl:gethash key hash-table))
 
 (cl:defun println (str cl:&rest args)
   (cl:apply #'cl:format cl:t str args)
@@ -31,7 +35,7 @@
   (cl:loop
     :with ht := (cl:make-hash-table)
     :for (key val) :on contents :by #'cl:cddr
-    :do (cl:setf (gethash key ht) val)
+    :do (cl:setf (cl:gethash key ht) val)
     :finally (cl:return ht)))
 
 (cl:defun read-hash-table (stream ch arg)
@@ -53,13 +57,26 @@
 
 (cl:defun object-p (obj)
   (cl:and (cl:hash-table-p obj)
-       (gethash :*meta* obj)
-       (cl:hash-table-p (gethash :*meta* obj))))
+          (cl:gethash :*meta* obj nil)
+          (cl:hash-table-p (cl:gethash :*meta* obj))))
+
+(cl:define-condition unknown-message (cl:error)
+  ((msg) (args)))
 
 (cl:defun send (message object cl:&rest args)
   (cl:unless (object-p object)
     (error (cl:format cl:nil "~s is not an object" object)))
-  (cl:let ((method (gethash message object)))
+  (cl:let ((method (cl:gethash message object)))
     (cl:if method
-        (cl:apply method object args)
-        (cl:apply #'send message (gethash :*meta* object) args))))
+           (cl:apply method object args)
+           (cl:let* ((meta (get object :*meta*))
+                     (parent (get meta :parent)))
+             (cl:if parent
+                    (try
+                        (cl:apply #'send message parent args)
+                      (unknown-message (e)
+                                       (cl:let ((unknown-message (get object :unknown-message)))
+                                         (cl:if unknown-message
+                                                (cl:apply #'send :unknown-message object message args)
+                                                (error e)))))
+                    (error (cl:make-condition 'unknown-message :msg message :args args)))))))
