@@ -31,3 +31,10 @@
 
 (send :hoge obj 1 2)
 ; => unknown message :hoge with args (1 2)
+
+;; utilities
+(make-object child *parent-object*)
+; => #{:*meta* #{:name :child :parent *parent-object*}}
+
+(define-message say obj (name)
+  (println "say {}!" name))

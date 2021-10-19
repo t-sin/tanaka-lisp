@@ -32,6 +32,8 @@
        (cl:lambda (,@values) ,@body)
      ,form))
 
+;;;; hash tables
+
 (cl:defun hash (&rest contents)
   (cl:loop
     :with ht := (cl:make-hash-table)
@@ -56,10 +58,22 @@
     :do (cl:format stream "~s" k) (cl:format stream " ~s" v))
   (cl:format stream "}"))
 
+;;;; Object oriented programming
+
+(cl:defun make-object (name parent)
+  (cl:let* ((meta (hash :name name :parent parent))
+            (obj (hash :*meta* meta)))
+    obj))
+
 (cl:defun object-p (obj)
   (cl:and (cl:hash-table-p obj)
           (cl:gethash :*meta* obj nil)
           (cl:hash-table-p (cl:gethash :*meta* obj))))
+
+;; NOTE: this OVERRIDE same message of its parent
+(cl:defmacro define-message (name obj (&rest args) cl:&body body)
+  `(cl:setf (cl:gethash (cl:intern (cl:symbol-name ',name) :keyword) ,obj)
+            (lambda (self ,@args) ,@body)))
 
 (cl:defmethod cl:print-object ((ht cl:hash-table) stream)
   (if (object-p ht)
