@@ -10,7 +10,7 @@
 (let ((n 0))
   (loop
     :while (< n 3)  ; conditional form (optional)
-    :do (progn      ; body (implicit progn)
+    :do (do         ; body
           (println "n = {}\n" n)
           (set n (1+ n)))))
 ;    0

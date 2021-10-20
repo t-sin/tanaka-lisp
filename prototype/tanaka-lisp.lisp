@@ -2,11 +2,15 @@
   (:use)
   (:import-from :cl
                 :>
+                :<
                 :=
                 :/
+                :1+
                 :nil
                 :t
+                :let
                 :defun
+                :cond
                 :if
                 :lambda
                 :setq
@@ -17,15 +21,35 @@
 (cl:defun get (hash-table key)
   (cl:gethash key hash-table))
 
+(cl:defmacro set (form value)
+  `(cl:setf ,form ,value))
+
 (cl:defun println (str &rest args)
   (cl:apply #'cl:format cl:t str args)
   (cl:values))
+
+;;;; control flow
+
+(cl:defmacro do (cl:&body body)
+  `(cl:progn ,@body))
+
+(cl:defmacro loop (&rest args)
+  `(cl:loop
+     :while ,(let ((while-clause (cl:getf args :while)))
+               (if while-clause
+                   while-clause
+                   t))
+     :do ,(cl:getf args :do)))
+
+;;;; error handling
 
 (cl:defun error (msg)
   (cl:error msg))
 
 (cl:defmacro try (form cl:&body catches)
   `(cl:handler-case ,form ,@catches))
+
+;;;; utilities
 
 (cl:defmacro bind ((cl:&body values) form cl:&body body)
   `(cl:multiple-value-call
