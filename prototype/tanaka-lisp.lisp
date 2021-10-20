@@ -48,12 +48,10 @@
                             (cl:write-char #\newline out))))
                 (t (cl:write-char (read1) out))))))))
 
-(cl:defun format (str &rest args)
+(cl:defun format (stream str &rest args)
   (let ((fmtstr (%parse-format-string str)))
     ;;    (cl:format t "fmtstr = ~s~%" fmtstr)
-    (cl:apply #'cl:format cl:t fmtstr args)
-    (cl:values)))
-
+    (cl:apply #'cl:format stream fmtstr args)))
 ;;;; control flow
 
 (cl:defmacro do (cl:&body body)
@@ -154,11 +152,13 @@
 ;; NOTE: this OVERRIDE same message of its parent
 (cl:defmacro define-message (name obj (&rest args) cl:&body body)
   `(cl:setf (cl:gethash (cl:intern (cl:symbol-name ',name) :keyword) ,obj)
-            (lambda (self ,@args) ,@body)))
+            (lambda (self ,@args)
+              (cl:declare (cl:ignorable self))
+              ,@body)))
 
 (cl:defmethod cl:print-object ((ht cl:hash-table) stream)
   (if (object-p ht)
-      (cl:format stream "#<object:~a>" (get (get ht :*meta*) :name))
+      (cl:format stream "~a" (send :to-string ht))
       (%print-hash-table ht stream)))
 
 (cl:define-condition unknown-message (cl:error)

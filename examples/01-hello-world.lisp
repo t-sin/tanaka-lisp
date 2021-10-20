@@ -1,2 +1,2 @@
 ;; hello world example
-(format "hello world!\n")
+(format t "hello world!\n")

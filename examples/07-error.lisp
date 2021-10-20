@@ -13,7 +13,7 @@
 
 (try
     (div 10 0)
-  (arithmetic-error (_) (format "{}" "division by zero\n")))
+  (arithmetic-error (_) (format t "{}" "division by zero\n")))
 ; => division by zero
 
 (div 10 0)

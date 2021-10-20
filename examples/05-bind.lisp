@@ -1,7 +1,7 @@
 ;; binding multiple values
 (bind (quotient)
     (div 10 5)
-  (format "{}\n" quotient))
+  (format t "{}\n" quotient))
 ; => 2
 
 ;; destructuring binding
