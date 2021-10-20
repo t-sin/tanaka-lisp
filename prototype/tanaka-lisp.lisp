@@ -169,10 +169,12 @@
     (error (cl:format cl:nil "~s is not an object" object)))
   (bind (msg-fn obj)
       (find-message message object)
+    (cl:declare (cl:ignore obj))
     (if msg-fn
-        (cl:apply msg-fn obj args)
+        (cl:apply msg-fn object args)
         (bind (msg-fn obj)
             (find-message :unknown-message object)
+          (cl:declare (cl:ignore obj))
           (if msg-fn
-              (cl:funcall #'send :unknown-message obj message args)
+              (cl:funcall #'send :unknown-message object message args)
               (error (cl:make-condition 'unknown-message :msg message :args args)))))))
