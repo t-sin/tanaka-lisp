@@ -70,11 +70,28 @@
 
 ;;;; error handling
 
-(cl:defun error (msg)
-  (cl:error msg))
+(cl:define-condition tanaka/condition (cl:condition)
+  ((obj :initarg :obj
+        :accessor tanaka/condition-obj)))
+
+(cl:defun error (obj)
+  (cl:error (cl:make-condition 'tanaka/condition :obj obj)))
 
 (cl:defmacro try (form cl:&body catches)
-  `(cl:handler-case ,form ,@catches))
+  (let ((e (cl:gensym))
+        (obj (cl:gensym)))
+    `(cl:handler-case
+         ,form
+       (tanaka/condition (,e)
+         (let ((,obj (tanaka/condition-obj ,e)))
+           (cl:case (get (get ,obj :*meta*) :name)
+             ,@(cl:loop
+                 :for catch :in catches
+                 :collect `(',(cl:intern (cl:symbol-name (cl:first catch)) :keyword)
+                            (let ((,(cl:car (cl:second catch)) ,obj))
+                              ,@(cl:cddr catch))))
+             (t (cl:error ,e)))))
+       (cl:condition (,e) (cl:error ,e)))))
 
 ;;;; utilities
 

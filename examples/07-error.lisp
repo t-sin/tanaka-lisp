@@ -1,7 +1,11 @@
 ;; error handling example
+
+(set error (make-object :error nil))
+(set arithmetic-error (make-object :arithmetic-error error))
+
 (defun div (a b)
   (if (= b 0)
-    (error "division by zero")
+    (error arithmetic-error)
     (/ a b)))
 
 (div 10 5)
