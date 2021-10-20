@@ -26,8 +26,22 @@
 
 ;;;; formatted output
 
+(cl:defun %escape-println-string (str)
+  str)
+
+(cl:defun %parse-println-string (str)
+  (cl:with-input-from-string (in str)
+    (cl:loop
+      :with placeholders := nil
+      :for ch := (cl:read-char in nil :eof)
+      :do nil
+      :finally (return placeholders))))
+
 (cl:defun println (str &rest args)
+  (cl:let* ((escaped (%escape-println-string str))
+            (ph-list (%parse-println-string str))))
   (cl:apply #'cl:format cl:t str args)
+  (cl:terpri)
   (cl:values))
 
 ;;;; control flow
