@@ -26,7 +26,7 @@
 
 ;;;; formatted output
 
-(cl:defun %parse-println-string (str)
+(cl:defun %parse-format-string (str)
   (cl:with-output-to-string (out)
     (cl:with-input-from-string (in str)
       (cl:flet ((peek1 () (cl:peek-char nil in nil :eof))
@@ -50,7 +50,7 @@
                 (t (cl:write-char (read1) out))))))))
 
 (cl:defun format (str &rest args)
-  (let ((fmtstr (%parse-println-string str)))
+  (let ((fmtstr (%parse-format-string str)))
     ;;    (cl:format t "fmtstr = ~s~%" fmtstr)
     (cl:apply #'cl:format cl:t fmtstr args)
     (cl:values)))
