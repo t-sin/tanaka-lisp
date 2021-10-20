@@ -80,7 +80,7 @@
 
 (cl:defmacro bind ((cl:&body values) form cl:&body body)
   `(cl:multiple-value-call
-       (cl:lambda (,@values) ,@body)
+       (cl:lambda (cl:&optional ,@values) ,@body)
      ,form))
 
 ;;;; hash tables
@@ -158,5 +158,5 @@
         (bind (msg-fn obj)
             (find-message :unknown-message object)
           (if msg-fn
-              (cl:apply #'send :unknown-message obj args)
+              (cl:funcall #'send :unknown-message obj message args)
               (error (cl:make-condition 'unknown-message :msg message :args args)))))))
