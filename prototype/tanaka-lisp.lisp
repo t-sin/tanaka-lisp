@@ -24,6 +24,8 @@
 (cl:defmacro set (form value)
   `(cl:setf ,form ,value))
 
+;;;; formatted output
+
 (cl:defun println (str &rest args)
   (cl:apply #'cl:format cl:t str args)
   (cl:values))
