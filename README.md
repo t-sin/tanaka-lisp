@@ -1,26 +1,28 @@
 # tanaka-lisp
 
-An embeddable Lisp. Dedicated with [him](https://oddtaxi.fandom.com/wiki/Hajime_Tanaka).
+Maybe an embeddable Lisp, or an object oriented Lisp? I don't know yet.
+
+Anyway, it's dedicated with [him](https://oddtaxi.fandom.com/wiki/Hajime_Tanaka).
 
 ## features
 
-- lexical bindings, without dynamic bindings
-- rest arguments, without optional and keyword arguments
-- multiple values
-- object oriented programming
-    - meta hash table
-    - Lua style
-- Java-style error handling
+- basic features
+    - lexical bindings, without dynamic bindings
+    - rest or optional arguments and without keyword arguments
+    - multiple values
+    - control flow
+        - `cond` special form (Common Lisp one)
+        - `loop` special form (not Common Lisp one)
 - data types
     - integers
     - floating point numbers
     - strings
     - arrays
     - hash table
-- control flow
-    - `cond` special form (Common Lisp one)
-    - `loop` special form (not Common Lisp one)
-- macro system
+- object oriented programming
+    - meta hash table
+    - Lua style
+- Java-style error handling
 - I/O streams
     - binary streams
     - character streams
