@@ -39,7 +39,7 @@
                      (if (cl:eq (peek1) #\})
                          (cl:progn
                            (read1)
-                           (cl:format out "~~s"))
+                           (cl:format out "~~a"))
                          (error (cl:format nil "malformed format string: ~s" str))))
                 (#\\ (read1)
                      (cl:ecase (peek1)
