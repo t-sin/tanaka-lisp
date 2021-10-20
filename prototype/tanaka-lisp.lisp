@@ -26,23 +26,34 @@
 
 ;;;; formatted output
 
-(cl:defun %escape-println-string (str)
-  str)
-
 (cl:defun %parse-println-string (str)
-  (cl:with-input-from-string (in str)
-    (cl:loop
-      :with placeholders := nil
-      :for ch := (cl:read-char in nil :eof)
-      :do nil
-      :finally (return placeholders))))
+  (cl:with-output-to-string (out)
+    (cl:with-input-from-string (in str)
+      (cl:flet ((peek1 () (cl:peek-char nil in nil :eof))
+                (read1 () (cl:read-char in)))
+        (cl:loop :named input-loop
+          :with placeholders := nil
+          :for ch := (peek1)
+          :do (cl:case ch
+                (:eof (cl:return-from input-loop))
+                (#\{ (read1)
+                     (if (cl:eq (peek1) #\})
+                         (cl:progn
+                           (read1)
+                           (cl:format out "~~s"))
+                         (error (cl:format nil "malformed format string: ~s" str))))
+                (#\\ (read1)
+                     (cl:ecase (peek1)
+                       (#\\ (cl:write-char (peek1) out))
+                       (#\n (read1)
+                            (cl:write-char #\newline out))))
+                (t (cl:write-char (read1) out))))))))
 
 (cl:defun format (str &rest args)
-  (cl:let* ((escaped (%escape-println-string str))
-            (ph-list (%parse-println-string str))))
-  (cl:apply #'cl:format cl:t str args)
-  (cl:terpri)
-  (cl:values))
+  (let ((fmtstr (%parse-println-string str)))
+    ;;    (cl:format t "fmtstr = ~s~%" fmtstr)
+    (cl:apply #'cl:format cl:t fmtstr args)
+    (cl:values)))
 
 ;;;; control flow
 
