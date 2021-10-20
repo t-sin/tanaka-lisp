@@ -32,7 +32,6 @@
       (cl:flet ((peek1 () (cl:peek-char nil in nil :eof))
                 (read1 () (cl:read-char in)))
         (cl:loop :named input-loop
-          :with placeholders := nil
           :for ch := (peek1)
           :do (cl:case ch
                 (:eof (cl:return-from input-loop))
