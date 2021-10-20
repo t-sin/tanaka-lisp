@@ -5,14 +5,14 @@
 ;; class is a hash table that has a hash table named as `*meta*`
 (setq *animal*
   #{:*meta* #{:name :animal :parent nil}
-    :say (lambda (self) (println "Animal!"))})
+    :say (lambda (self) (format "Animal!\n"))})
 ; => #{...}
 
 (setq *dodo*
   #{:*meta* #{:name :dodo :parent *animal*}
     :say (lambda (self)
               (send :say (get (get self :*meta*) :parent))
-              (println "Dodo!!"))})
+              (format "Dodo!!\n"))})
 ; => #{...}
 
 (send :say *animal*)
@@ -37,7 +37,7 @@
 ; => #{:*meta* #{:name :dodo :parent *parent-object*}}
 
 (define-message say dodo ()
-  (println "say dodo!"))
+  (format "say dodo!\n"))
 
 (send :say dodo)
 ; => say dodo!

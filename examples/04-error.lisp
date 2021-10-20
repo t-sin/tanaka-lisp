@@ -9,7 +9,7 @@
 
 (try
     (div 10 0)
-  (arithmetic-error (_) (println "{}" "division by zero")))
+  (arithmetic-error (_) (format "{}" "division by zero\n")))
 ; => division by zero
 
 (div 10 0)

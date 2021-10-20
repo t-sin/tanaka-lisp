@@ -37,7 +37,7 @@
       :do nil
       :finally (return placeholders))))
 
-(cl:defun println (str &rest args)
+(cl:defun format (str &rest args)
   (cl:let* ((escaped (%escape-println-string str))
             (ph-list (%parse-println-string str))))
   (cl:apply #'cl:format cl:t str args)

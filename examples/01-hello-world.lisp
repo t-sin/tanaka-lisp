@@ -1,2 +1,2 @@
 ;; hello world example
-(println "hello world!")
+(format "hello world!\n")
