@@ -18,8 +18,8 @@ An embeddable Lisp. Dedicated with [him](https://oddtaxi.fandom.com/wiki/Hajime_
     - arrays
     - hash table
 - control flow
-    - tagbody/go
-    - block/return
+    - `cond` special form (Common Lisp one)
+    - `loop` special form (not Common Lisp one)
 - macro system
 - I/O streams
     - binary streams
