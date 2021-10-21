@@ -1,0 +1,49 @@
+(in-package :tanaka-lisp)
+
+(cl:defparameter *archetype* #{})
+
+(cl:eval-when (:compile-toplevel)
+  (cl:defun %name (symbol)
+    (cl:intern (cl:format nil "TYPE/~a" (cl:symbol-name symbol)) :keyword))
+
+  (cl:defmacro define-object (name parent)
+    (let ((name (%name name)))
+      `(cl:setf (cl:gethash ,name *archetype*) (make-object ,name ,parent))))
+
+  (cl:defmacro type (name)
+    `(cl:gethash ,(%name name) *archetype*)))
+
+;;;; root object
+
+(define-object object nil)
+
+(define-message name (type object) ()
+  (get (get self :*meta*) :name))
+
+(define-message parent (type object) ()
+  (get (get self :*meta*) :parent))
+
+(define-message to-string (type object) ()
+  (format nil "#<{}>" (cl:symbol-name (get (get self :*meta*) :name))))
+
+(define-message print (type object) ()
+  (format t "{}" (send :to-string self))
+  (cl:values))
+
+(define-message eval (type object) ()
+  self)
+
+;;;; integer
+
+(define-object integer (type object))
+
+(define-message construct (type integer) (lisp-val)
+  (let ((i (make-object :integer (type integer))))
+    (cl:setf (cl:gethash :value i) lisp-val)
+    i))
+
+(define-message to-string (type integer) ()
+  (let ((v (get self :value)))
+    (if v
+        (format nil "{}" (get self :value))
+        (send :name self))))
