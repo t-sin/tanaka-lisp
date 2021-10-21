@@ -78,3 +78,10 @@
     (if v
         (format nil "{}" (get self :value))
         (send :name self))))
+
+(define-message + (type integer) (other)
+  (if (send :descendant? other (type integer))
+      (send :construct (type integer)
+            (cl:+ (get self :value)
+               (get other :value)))
+      (cl:error "~s is not an integer" other)))
