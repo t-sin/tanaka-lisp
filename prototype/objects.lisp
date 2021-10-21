@@ -30,6 +30,14 @@
   (format t "{}" (send :to-string self))
   (cl:values))
 
+(define-message descendant? (type object) (ancestor)
+  (let ((parent (send :parent self)))
+  (if (cl:null parent)
+      (send :false (type boolean))
+      (if (cl:eq parent ancestor)
+          (send :true (type boolean))
+          (send :descendant? parent ancestor)))))
+
 (define-message eval (type object) ()
   self)
 
