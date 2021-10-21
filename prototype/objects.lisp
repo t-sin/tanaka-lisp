@@ -33,6 +33,29 @@
 (define-message eval (type object) ()
   self)
 
+;;;; boolean
+
+(define-object boolean (type object))
+
+(define-message to-string (type boolean) ()
+  (format nil "{}" (cl:symbol-name (get (get self :*meta*) :name))))
+
+(define-message true (type boolean) ()
+  (let ((true (get self :*true*)))
+    (if true
+        true
+        (let ((true (make-object :true (type boolean))))
+          (cl:setf (cl:gethash :*true* self) true)
+          true))))
+
+(define-message false (type boolean) ()
+  (let ((false (get self :*false*)))
+    (if false
+        false
+        (let ((false (make-object :false (type boolean))))
+          (cl:setf (cl:gethash :*false* self) false)
+          false))))
+
 ;;;; integer
 
 (define-object integer (type object))
