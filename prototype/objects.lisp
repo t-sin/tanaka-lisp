@@ -24,7 +24,7 @@
   (get (get self :*meta*) :parent))
 
 (define-message to-string (type object) ()
-  (format nil "#<{}>" (cl:symbol-name (get (get self :*meta*) :name))))
+  (format nil "#<{}>" (cl:symbol-name (send :name self))))
 
 (define-message print (type object) ()
   (format t "{}" (send :to-string self))
@@ -46,7 +46,7 @@
 (define-object boolean (type object))
 
 (define-message to-string (type boolean) ()
-  (format nil "{}" (cl:symbol-name (get (get self :*meta*) :name))))
+  (format nil "{}" (cl:symbol-name (send :name self))))
 
 (define-message true (type boolean) ()
   (let ((true (get self :*true*)))
