@@ -3,5 +3,5 @@
   :version "0.1.0"
   :description "Lisp for Tanaka"
   :serial t
-  :components ((:file "core")
-               (:file "objects")))
+  :components ((:file "layer1")
+               (:file "layer2")))
