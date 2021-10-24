@@ -1,5 +1,61 @@
 (in-package :tanaka-lisp)
 
+;;;; object system
+
+(cl:defun make-object (name parent)
+  (cl:let* ((meta (hash :name name :parent parent))
+            (obj (hash :*meta* meta)))
+    obj))
+
+(cl:defun object-p (obj)
+  (cl:and (cl:hash-table-p obj)
+          (cl:gethash :*meta* obj nil)
+          (cl:hash-table-p (cl:gethash :*meta* obj))))
+
+(cl:defun find-message (name object)
+  (cl:unless (object-p object)
+    (error (cl:format cl:nil "~s is not an object" object)))
+  (cl:unless (cl:keywordp name)
+    (error (cl:format cl:nil "~s is not a keyword" name)))
+  (cl:let ((method (cl:gethash name object)))
+    (cl:if method
+           (cl:values method object)
+           (cl:let* ((meta (get object :*meta*))
+                     (parent (get meta :parent)))
+             (cl:if parent
+                    (find-message name parent)
+                    nil)))))
+
+;; NOTE: this OVERRIDE same message of its parent
+(cl:defmacro define-message (name obj (&rest args) cl:&body body)
+  `(cl:setf (cl:gethash (cl:intern (cl:symbol-name ',name) :keyword) ,obj)
+            (lambda (self ,@args)
+              (cl:declare (cl:ignorable self))
+              ,@body)))
+
+(cl:defmethod cl:print-object ((ht cl:hash-table) stream)
+  (if (object-p ht)
+      (cl:format stream "~a" (send :to-string ht))
+      (%print-hash-table ht stream)))
+
+(cl:define-condition unknown-message (cl:error)
+  ((msg) (args)))
+
+(cl:defun send (message object &rest args)
+  (cl:unless (object-p object)
+    (error (cl:format cl:nil "~s is not an object" object)))
+  (bind (msg-fn obj)
+      (find-message message object)
+    (cl:declare (cl:ignore obj))
+    (if msg-fn
+        (cl:apply msg-fn object args)
+        (bind (msg-fn obj)
+            (find-message :unknown-message object)
+          (cl:declare (cl:ignore obj))
+          (if msg-fn
+              (cl:funcall #'send :unknown-message object message args)
+              (error (cl:make-condition 'unknown-message :msg message :args args)))))))
+
 (cl:defparameter *archetype* #{})
 
 (cl:eval-when (:compile-toplevel)
