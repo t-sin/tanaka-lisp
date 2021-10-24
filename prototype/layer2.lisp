@@ -2,29 +2,29 @@
 
 ;;;; object system
 
-(cl:defun make-object (name parent)
-  (cl:let* ((meta (hash :name name :parent parent))
-            (obj (hash :*meta* meta)))
-    obj))
+(defun make-object (name parent)
+  (let ((meta (hash :name name :parent parent)))
+    (let ((obj (hash :*meta* meta)))
+      obj)))
 
-(cl:defun object-p (obj)
+(defun object-p (obj)
   (cl:and (cl:hash-table-p obj)
           (cl:gethash :*meta* obj nil)
           (cl:hash-table-p (cl:gethash :*meta* obj))))
 
-(cl:defun find-message (name object)
+(defun find-message (name object)
   (cl:unless (object-p object)
-    (error (cl:format cl:nil "~s is not an object" object)))
+    (error (cl:format nil "~s is not an object" object)))
   (cl:unless (cl:keywordp name)
-    (error (cl:format cl:nil "~s is not a keyword" name)))
-  (cl:let ((method (cl:gethash name object)))
-    (cl:if method
+    (error (cl:format nil "~s is not a keyword" name)))
+  (let ((method (cl:gethash name object)))
+    (if method
            (cl:values method object)
-           (cl:let* ((meta (get object :*meta*))
-                     (parent (get meta :parent)))
-             (cl:if parent
-                    (find-message name parent)
-                    nil)))))
+           (let ((meta (get object :*meta*)))
+             (let ((parent (get meta :parent)))
+               (if parent
+                   (find-message name parent)
+                   nil))))))
 
 ;; NOTE: this OVERRIDE same message of its parent
 (cl:defmacro define-message (name obj (&rest args) cl:&body body)
@@ -41,9 +41,9 @@
 (cl:define-condition unknown-message (cl:error)
   ((msg) (args)))
 
-(cl:defun send (message object &rest args)
+(defun send (message object &rest args)
   (cl:unless (object-p object)
-    (error (cl:format cl:nil "~s is not an object" object)))
+    (error (cl:format nil "~s is not an object" object)))
   (bind (msg-fn obj)
       (find-message message object)
     (cl:declare (cl:ignore obj))
@@ -59,7 +59,7 @@
 (cl:defparameter *archetype* #{})
 
 (cl:eval-when (:compile-toplevel)
-  (cl:defun %name (symbol)
+  (defun %name (symbol)
     (cl:intern (cl:format nil "TYPE/~a" (cl:symbol-name symbol)) :keyword))
 
   (cl:defmacro define-object (name parent)
