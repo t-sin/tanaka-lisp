@@ -1,7 +1,8 @@
 ;; message definition example
 
-(defmsg pulse ((ph float) (duty float))
-  (if (> ph duty)
+(defmsg pulse (duty)
+    (type float)
+  (if (> self duty)
       1.0
       0.0))
 
