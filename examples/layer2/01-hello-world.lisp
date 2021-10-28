@@ -1,3 +1,3 @@
 ;; hello world example
 
-(format (stdio) "hello world!\n")
+(write (stdio) (format "hello world!\n"))
