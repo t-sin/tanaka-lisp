@@ -165,3 +165,28 @@
                               :collect (send :eval arg)))))
     (send :construct (type string) lisp-str)))
 
+;;;; input stream
+
+(define-object output-stream (type object))
+
+(define-message construct (type output-stream) (lisp-stream)
+  (let ((s (define-object %output-stream (type output-stream))))
+    (cl:setf (cl:gethash :lisp-stream s) lisp-stream)
+    s))
+
+(define-message write (type output-stream) (object)
+  (cl:write-string (send :to-lisp-string object)
+                   (get self :lisp-stream))
+  (cl:values))
+
+;;;; runtime object
+
+(define-object runtime (type object))
+
+(define-message stdout (type runtime) ()
+  (let ((stdout (get self :*stdout*)))
+    (if (cl:null stdout)
+        (let ((stdout (send :construct (type output-stream) cl:*standard-output*)))
+          (cl:setf (cl:gethash :*stdout* self) stdout)
+          stdout)
+        stdout)))
