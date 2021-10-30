@@ -35,7 +35,7 @@
 
 (cl:defmethod cl:print-object ((ht cl:hash-table) stream)
   (if (object-p ht)
-      (cl:format stream "~a" (send :to-string ht))
+      (cl:format stream "~a" (send :to-lisp-string ht))
       (%print-hash-table ht stream)))
 
 (cl:define-condition unknown-message (cl:error)
@@ -79,11 +79,15 @@
 (define-message parent (type object) ()
   (get (get self :*meta*) :parent))
 
-(define-message to-string (type object) ()
+(define-message to-lisp-string (type object) ()
   (format nil "#<{}>" (cl:symbol-name (send :name self))))
 
+(define-message to-string (type object) ()
+  (send :construct (type string)
+        (send :to-lisp-string self)))
+
 (define-message print (type object) ()
-  (format t "{}" (send :to-string self))
+  (format t "{}" (send :to-lisp-string self))
   (cl:values))
 
 (define-message descendant? (type object) (ancestor)
@@ -101,7 +105,7 @@
 
 (define-object boolean (type object))
 
-(define-message to-string (type boolean) ()
+(define-message to-lisp-string (type boolean) ()
   (format nil "{}" (cl:symbol-name (send :name self))))
 
 (define-message true (type boolean) ()
@@ -129,10 +133,10 @@
     (cl:setf (cl:gethash :value i) lisp-val)
     i))
 
-(define-message to-string (type integer) ()
-  (let ((v (get self :value)))
+(define-message to-lisp-string (type integer) ()
+  (let ((v (get self :lisp-value)))
     (if v
-        (format nil "{}" (get self :value))
+        (format nil "{}" (get self :lisp-value))
         (send :name self))))
 
 (define-message + (type integer) (other)
@@ -141,3 +145,23 @@
             (cl:+ (get self :value)
                (get other :value)))
       (cl:error "~s is not an integer" other)))
+
+;;;; string
+
+(define-object string (type object))
+
+(define-message construct (type string) (lisp-string)
+  (let ((s (make-object :string (type string))))
+    (cl:setf (cl:gethash :lisp-value s) lisp-string)
+    s))
+
+(define-message to-lisp-string (type string) ()
+  (format nil "{}" (get self :lisp-value)))
+
+(define-message format (type string) (&rest args)
+  (let ((lisp-str (cl:apply #'format nil (send :to-lisp-string self)
+                            (cl:loop
+                              :for arg :in args
+                              :collect (send :eval arg)))))
+    (send :construct (type string) lisp-str)))
+
