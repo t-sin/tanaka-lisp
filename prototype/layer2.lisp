@@ -165,6 +165,18 @@
                               :collect (send :eval arg)))))
     (send :construct (type string) lisp-str)))
 
+;;;; proc
+
+(define-object proc (type object))
+
+(defun make-proc (params body)
+  (let ((p (define-object proc (type proc)))
+        ;; これはCommon Lispではできない
+        (fn (make-function params body)))
+    ;; これもCommon Lispではできない
+    (cl:setf (function-environment fn) (make-lexical-environment))
+    (cl:setf (cl:gethash :*fn* p) fn)))
+
 ;;;; symbol
 
 (define-object symbol (type object))
