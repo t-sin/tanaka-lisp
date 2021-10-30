@@ -130,7 +130,7 @@
 
 (define-message construct (type integer) (lisp-val)
   (let ((i (make-object :integer (type integer))))
-    (cl:setf (cl:gethash :value i) lisp-val)
+    (cl:setf (cl:gethash :lisp-value i) lisp-val)
     i))
 
 (define-message to-lisp-string (type integer) ()
@@ -142,8 +142,8 @@
 (define-message + (type integer) (other)
   (if (send :descendant? other (type integer))
       (send :construct (type integer)
-            (cl:+ (get self :value)
-               (get other :value)))
+            (cl:+ (get self :lisp-value)
+               (get other :lisp-value)))
       (cl:error "~s is not an integer" other)))
 
 ;;;; string
