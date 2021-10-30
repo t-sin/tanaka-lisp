@@ -180,8 +180,11 @@
     (cl:setf (cl:gethash :id s) id)
     s))
 
-(define-message equal (type symbol) (other)
-  (cl:eq (get self :id) (get other :id)))
+(define-message = (type symbol) (other)
+  (if (and (send :descendant? other (type symbol))
+           (cl:eq (get self :id) (get other :id)))
+      (send :true (type boolean))
+      (send :false (type boolean))))
 
 (define-message defmsg (type symbol) (receiver args &rest body)
   ;; やること:
