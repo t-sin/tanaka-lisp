@@ -165,6 +165,34 @@
                               :collect (send :eval arg)))))
     (send :construct (type string) lisp-str)))
 
+;;;; symbol
+
+(define-object symbol (type object))
+
+(define-message construct (type symbol) (string)
+  (let ((s (define-object symbol self))
+        (id (let ((%id (get self :id)))
+              (if (cl:null %id)
+                  (do (cl:setf (cl:gethash :id self) 0)
+                      0)
+                  (cl:incf (cl:gethash :id self))))))
+    (cl:setf (cl:gethash :name s) string)
+    (cl:setf (cl:gethash :id s) id)
+    s))
+
+(define-message equal (type symbol) (other)
+  (cl:eq (get self :id) (get other :id)))
+
+(define-message defmsg (type symbol) (receiver args &rest body)
+  ;; やること:
+  ;;
+  ;; 1. 引数と本体からprocオブジェクトを生成する
+  ;; 2. receiverにself.nameをキーとして、生成したprocオブジェクトを設定する
+  ;;
+  ;; ただしまだsendがprocオブジェクトに対応してないのでどげんかせんといけん
+  (let ((proc (send :construct (type proc) args body)))
+    ))
+
 ;;;; input stream
 
 (define-object output-stream (type object))
