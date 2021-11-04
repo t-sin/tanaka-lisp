@@ -1,6 +1,6 @@
 # tanaka-lisp
 
-Maybe an embeddable Lisp, or an object oriented Lisp? I don't know yet.
+An object-oriented Lisp. Realization of the dodo graphics.
 
 Anyway, it's dedicated with [him](https://oddtaxi.fandom.com/wiki/Hajime_Tanaka).
 
