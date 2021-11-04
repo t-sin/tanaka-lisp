@@ -27,7 +27,6 @@ Anyway, it's dedicated with [him](https://oddtaxi.fandom.com/wiki/Hajime_Tanaka)
     - binary streams
     - character streams
 
-## goals?
+## goal
 
-- real-time sound generation with `play` command
-- describing danmaku system
+simple text processing like something
