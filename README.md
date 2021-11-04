@@ -29,4 +29,4 @@ Anyway, it's dedicated with [him](https://oddtaxi.fandom.com/wiki/Hajime_Tanaka)
 
 ## goal
 
-simple text processing like something
+PGM image generation with [turle graphics](https://en.wikipedia.org/wiki/Turtle_graphics)
