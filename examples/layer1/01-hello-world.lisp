@@ -1,2 +1,2 @@
 ;; hello world example
-(format t "hello world!\n")
+(write *stdout* (format "hello world!\n"))
