@@ -4,6 +4,10 @@ An object-oriented Lisp. Do a *dodo graphics*.
 
 Anyway, it's dedicated with [him](https://oddtaxi.fandom.com/wiki/Hajime_Tanaka).
 
+## progress
+
+listed in [IMPLEMENTATION.md](IMPLEMENTATION.md)
+
 ## features
 
 - basic features

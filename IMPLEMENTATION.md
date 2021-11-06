@@ -1,0 +1,34 @@
+# tanaka-lisp implementation progress
+
+- [ ] layer1 (Lisp layer)
+    - [ ] basic data types in REPL
+        - [ ] boolean values `#t` and `#f`
+        - [ ] integers
+        - [ ] floating point numbers
+        - [ ] dot pairs
+        - [ ] proper lists
+        - [ ] arrays
+        - [ ] hash tables
+        - [ ] symbols
+        - [ ] keywords
+    - [ ] special forms in REPL
+        - [ ] `cond`
+        - [ ] `if`
+        - [ ] `loop`
+        - [ ] `let`
+        - [ ] `lambda`
+        - [ ] `defun`
+        - [ ] `bind`
+        - [ ] `values`
+        - [ ] `set`
+            - [ ] for symbols
+            - [ ] arrays
+            - [ ] hash tables
+        - [ ] `try` and `error`
+    - [ ] array manupilation
+    - [ ] hash table manupilation
+    - [ ] preparation for layer2
+- [ ] layer2 (object-oriented layer)
+    - [ ] object-oriented `read`
+    - [ ] object-oriented `eval`
+- [ ] dodo graphics
