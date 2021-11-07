@@ -1,11 +1,15 @@
 PROGRAM = tanaka-lisp
-TEST_PROGRAM = tanaka-lisp.test
-OBJECTS = tanaka-lisp.o
+PROGRAM_OBJECT = tanaka-lisp.o
+OBJECTS = utf8.o
 
-$(PROGRAM): $(OBJECTS)
+TEST_PROGRAM = tanaka-lisp-test
+TEST_OBJECT = tanaka-lisp-test.o
+
+$(PROGRAM): $(PROGRAM_OBJECT) $(OBJECTS)
 	gcc $(CFLAGS) $^ -o $@
 
-$(TEST_PROGRAM): $(OBJECTS)
+$(TEST_PROGRAM): CFLAGS += -D TANAKA_LISP_TEST -g -O0
+$(TEST_PROGRAM): $(TEST_OBJECT) $(OBJECTS)
 	gcc $(CFLAGS) $^ -o $@
 
 .c.o:
@@ -13,6 +17,10 @@ $(TEST_PROGRAM): $(OBJECTS)
 
 .PHONY: all
 all: $(PROGRAM)
+
+.PHONY: test
+test: $(TEST_PROGRAM)
+	./$(TEST_PROGRAM)
 
 .PHONY: clean
 clean:
