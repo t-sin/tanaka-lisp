@@ -15,6 +15,7 @@
     - [ ] integers
     - [ ] floating point numbers
     - [ ] dot pairs
+        - [ ] garbage collection
     - [ ] proper lists
     - [ ] arrays
     - [ ] hash tables
