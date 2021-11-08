@@ -1,15 +1,11 @@
 # tanaka-lisp implementation progress
 
-
-## basic features
-
-- [ ] UTF-8 encoder/decoder
-- [ ] I/O streams
-    - [ ] binary streams
-    - [ ] text streams
-
 ## layer1 (Lisp layer)
 
+- [ ] echo REPL
+    - [ ] UTF-8 encoder/decoder
+    - [ ] binary streams
+    - [ ] text streams
 - [ ] basic data types in REPL
     - [ ] boolean values `#t` and `#f`
     - [ ] integers
