@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
-typedef uint32_t TanakaChar;
+typedef uint8_t tByte
+typedef uint32_t tChar;
 
 #endif
