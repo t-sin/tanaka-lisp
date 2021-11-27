@@ -1,6 +1,7 @@
 #include <stdint.h>
 
 #include "tanaka_type.h"
+#include "utf8.h"
 
 int t_utf8_length(tByte first_byte) {
     if (!(first_byte & 0x80)) {
@@ -12,7 +13,7 @@ int t_utf8_length(tByte first_byte) {
     } else if (first_byte & 0xf0) {
         return 4;
     } else {
-        return -1;
+        return UTF8_INVALID_OCTETS;
     }
 }
 
@@ -25,7 +26,7 @@ int t_utf8_decode(const tByte *bytes, int start, int len, tChar *out_char) {
         *out_char = byte;
         return n + 1;
     default:
-        return -1;
+        return UTF8_INVALID_OCTETS;
     }
 }
 

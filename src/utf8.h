@@ -5,6 +5,8 @@
 
 #include "tanaka_type.h"
 
+#define UTF8_INVALID_OCTETS -1
+
 // Distinguishes UTF-8 octet length from the first byte.
 int t_utf8_length(tByte first_byte);
 
