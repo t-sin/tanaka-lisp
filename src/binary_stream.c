@@ -31,12 +31,12 @@ static size_t stream_buffer_length(tBinaryStream *stream) {
     }
 }
 
-int t_peek_byte(tBinaryStream *stream, tByte *out_byte) {
-    if (stream == NULL || stream_buffer_length(stream) <= 0) {
+int t_peek_nth_byte(tBinaryStream *stream, size_t n, tByte *out_byte) {
+    if (stream == NULL || stream_buffer_length(stream) <= n) {
         return STREAM_EMPTY;
     }
 
-    *out_byte = stream->array[stream->tail];
+    *out_byte = stream->array[stream->tail + n];
     return 1;
 }
 
@@ -76,32 +76,58 @@ void t_clear_stream(tBinaryStream *stream) {
 #include <assert.h>
 #include <stdio.h>
 
-static void test_peek_byte_from_empty_stream() {
+static void test_peek_1st_byte_from_empty_stream() {
     tBinaryStream input = {NULL, 0, 0};
+    size_t nth = 0;
     int expected_ret = STREAM_EMPTY;
 
     tByte actual_byte;
-    int actual_ret = t_peek_byte(&input, &actual_byte);
+    int actual_ret = t_peek_nth_byte(&input, nth, &actual_byte);
 
     assert(actual_ret == expected_ret);
 }
 
-static void verify_peek_byte(tBinaryStream *input, int expected_ret, tByte expected_byte) {
+static void test_peek_2nd_byte_from_length1_stream() {
+    tByte input_buf[STREAM_BUFFER_SIZE] = {'a', 'b', 'c'};
+    tBinaryStream input = {input_buf, 1, 0};
+    size_t nth = 1;
+    int expected_ret = STREAM_EMPTY;
+
     tByte actual_byte;
-    int actual_ret = t_peek_byte(input, &actual_byte);
+    int actual_ret = t_peek_nth_byte(&input, nth, &actual_byte);
+
+    assert(actual_ret == expected_ret);
+}
+
+static void verify_peek_nth_byte(tBinaryStream *input, size_t nth, int expected_ret, tByte expected_byte) {
+    tByte actual_byte;
+    int actual_ret = t_peek_nth_byte(input, nth, &actual_byte);
 
     assert(actual_ret == expected_ret);
     assert(actual_byte == expected_byte);
 }
 
-static void test_peek_byte_one() {
-    tByte input_buf[STREAM_BUFFER_SIZE] = {'a', 0, 0};
+static void test_peek_1st_byte() {
+    tByte input_buf[STREAM_BUFFER_SIZE] = {'a', 'b', 'c'};
     tBinaryStream input = {input_buf, 1, 0};
+    size_t nth = 0;
     int expected_ret = 1;
     tByte expected_byte = 'a';
     size_t expected_tail = 0;
 
-    verify_peek_byte(&input, expected_ret, expected_byte);
+    verify_peek_nth_byte(&input, nth, expected_ret, expected_byte);
+    assert(input.tail == expected_tail);
+}
+
+static void test_peek_2nd_byte() {
+    tByte input_buf[STREAM_BUFFER_SIZE] = {'a', 'b', 'c'};
+    tBinaryStream input = {input_buf, 2, 0};
+    size_t nth = 1;
+    int expected_ret = 1;
+    tByte expected_byte = 'b';
+    size_t expected_tail = 0;
+
+    verify_peek_nth_byte(&input, nth, expected_ret, expected_byte);
     assert(input.tail == expected_tail);
 }
 
@@ -162,8 +188,10 @@ static void test_write_byte_to_full_stream() {
 }
 
 void test_binary_stream_all() {
-    test_peek_byte_from_empty_stream();
-    test_peek_byte_one();
+    test_peek_1st_byte_from_empty_stream();
+    test_peek_2nd_byte_from_length1_stream();
+    test_peek_1st_byte();
+    test_peek_2nd_byte();
 
     test_read_byte_from_empty_stream();
     test_read_byte_one();

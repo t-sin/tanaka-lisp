@@ -13,10 +13,10 @@ typedef struct tBinaryStream_t tBinaryStream;
 
 tBinaryStream *make_binary_stream();
 
-// Sees a byte from head of the stream but its head is not proceeded.
-// If the stream is empty (when its head and tail are same), it returns STREAM_EMPTY.
+// Sees a `n`-th byte from head of the stream but its head is not proceeded.
+// If the stream is empty (when `n`-th byte from head and tail are same), it returns STREAM_EMPTY.
 // Otherwise it returns a number of peek, so always returns one.
-int t_peek_byte(tBinaryStream *stream, tByte *out_byte);
+int t_peek_nth_byte(tBinaryStream *stream, size_t n, tByte *out_byte);
 
 // Reads a byte from head of the stream head then proceeds its head.
 // If the stream is empty (when its head and tail are same), it returns STREAM_EMPTY.

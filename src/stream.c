@@ -16,8 +16,8 @@ tStream *make_stream(tBinaryStream *bstream) {
     return stream;
 }
 
-int t_stream_peek_byte(tStream *stream, tByte *out_byte) {
-    return t_peek_byte(stream->bstream, out_byte);
+int t_stream_peek_nth_byte(tStream *stream, size_t nth, tByte *out_byte) {
+    return t_peek_nth_byte(stream->bstream, nth, out_byte);
 }
 
 int t_stream_read_byte(tStream *stream, tByte *out_byte) {
@@ -33,7 +33,7 @@ int t_stream_clear(tStream *stream) {
 
 int t_stream_peek_char(tStream *stream, tChar *out_ch) {
     tByte byte;
-    int ret = t_peek_byte(stream->bstream, &byte);
+    int ret = t_peek_nth_byte(stream->bstream, 0, &byte);
     if (ret != 1) {
         return ret;
     }
