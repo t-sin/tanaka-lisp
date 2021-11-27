@@ -49,8 +49,8 @@ int t_stream_peek_byte(tBinaryStream *stream, tByte *out_byte) {
     return 0;
 }
 
-static void proceed_tail(tBinaryStream *stream) {
-    stream->tail = (stream->tail + 1) % STREAM_BUFFER_SIZE;
+static void proceed(size_t *pos) {
+    *pos = (*pos + 1) % STREAM_BUFFER_SIZE;
 }
 
 int t_stream_read_byte(tBinaryStream *stream, tByte *out_byte) {
@@ -60,7 +60,7 @@ int t_stream_read_byte(tBinaryStream *stream, tByte *out_byte) {
 
     size_t read_pos = calculate_read_pos(stream);
     *out_byte = stream->array[read_pos];
-    proceed_tail(stream);
+    proceed(&stream->tail);
 
     return 1;
 }
