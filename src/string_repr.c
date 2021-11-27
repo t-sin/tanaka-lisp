@@ -130,15 +130,15 @@ static void print_integer(tStream *out, tLispObject *obj) {
     }
 
     for (int i = l - 1; i >= 0; i--) {
-        t_stream_write_byte(out, buf[i]);
+        t_stream_write_char(out, buf[i]);
     }
 }
 
 void tLisp_print(tStream *out, tLispObject *obj) {
     switch (obj->type) {
     case BOOLE:
-        t_stream_write_byte(out, '#');
-        t_stream_write_byte(out, obj->o.bool == 0 ? 'f' : 't');
+        t_stream_write_char(out, '#');
+        t_stream_write_char(out, obj->o.bool == 0 ? 'f' : 't');
         break;
 
     case INTEGER:
