@@ -17,14 +17,40 @@ int t_utf8_length(tByte first_byte) {
     }
 }
 
-int t_utf8_decode(const tByte *bytes, int start, int len, tChar *out_char) {
-    int n = 0;
-    tByte byte = bytes[start + n];
+int t_utf8_decode(const tByte *bytes4, tChar *out_char) {
+    tChar tmp;
 
-    switch (t_utf8_length(byte)) {
+    switch (t_utf8_length(bytes4[0])) {
     case 1:
-        *out_char = byte;
-        return n + 1;
+        tmp = bytes4[0];
+        *out_char = tmp;
+
+        return 1;
+
+    case 2:
+        tmp = (bytes4[0] & 0x01ff) << 6;
+        tmp = (bytes4[1] & 0x03ff) | tmp;
+        *out_char = tmp;
+
+        return 2;
+
+    case 3:
+        tmp = (bytes4[0] & 0x00ff) << 12;
+        tmp = (bytes4[1] & 0x03ff) << 6 | tmp;
+        tmp = (bytes4[2] & 0x03ff) | tmp;
+        *out_char = tmp;
+
+        return 3;
+
+    case 4:
+        tmp = (bytes4[0] & 0x0007) << 18;
+        tmp = (bytes4[1] & 0x03ff) << 12 | tmp;
+        tmp = (bytes4[2] & 0x03ff) << 6 | tmp;
+        tmp = (bytes4[3] & 0x03ff) | tmp;
+        *out_char = tmp;
+
+        return 4;
+
     default:
         return UTF8_INVALID_OCTETS;
     }
@@ -36,18 +62,22 @@ int t_utf8_decode(const tByte *bytes, int start, int len, tChar *out_char) {
 #include <assert.h>
 #include <stdio.h>
 
+#define INPUT_SIZE 4
+
+static void verify_utf8_decode(tByte *input, int eret, tChar ech) {
+    uint32_t actual_ch;
+    int actual_ret = t_utf8_decode(input, &actual_ch);
+
+    assert(actual_ret == eret);
+    assert(actual_ch == ech);
+}
+
 static void test_utf8_decode_ascii_one() {
-    uint8_t input_bytes[] = {'a'};
-    int input_start = 0;
-    int input_len = sizeof(input_bytes) / sizeof(input_bytes[0]);
-    uint32_t expected_char = 'a';
+    tByte input[INPUT_SIZE] = {'a'};
     int expected_ret = 1;
+    tChar expected_ch = 'a';
 
-    uint32_t actual_char;
-    int actual_ret = t_utf8_decode(input_bytes, input_start, input_len, &actual_char);
-
-    assert(actual_ret == expected_ret);
-    assert(actual_char == expected_char);
+    verify_utf8_decode(input, expected_ret, expected_ch);
 }
 
 void test_utf8_all() {

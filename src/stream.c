@@ -54,7 +54,7 @@ int t_stream_peek_char(tStream *stream, tChar *out_ch) {
         return STREAM_INVALID_UTF8_OCTETS;
     }
 
-    ret = t_utf8_decode(bytes, 0, 4, out_ch);
+    ret = t_utf8_decode(bytes, out_ch);
     if (ret == UTF8_INVALID_OCTETS) {
         return STREAM_INVALID_UTF8_OCTETS;
     }

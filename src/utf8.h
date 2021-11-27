@@ -10,11 +10,12 @@
 // Distinguishes UTF-8 octet length from the first byte.
 int t_utf8_length(tByte first_byte);
 
-// Decode UTF-8 octets.
-// If this reads valid bytes it returns a number of bytes read, otherwise -1.
+// Decodes UTF-8 octets.
+// If this reads valid bytes it returns a number of bytes read, otherwise `UTF8_INVALID_OCTETS`.
+// It assumes that `bytes4` has 4-byte length.
 //
 // Specification fo UTF-8 octets: https://datatracker.ietf.org/doc/html/rfc3629#section-4
-int t_utf8_decode(const uint8_t *bytes, int start, int len, tChar *out_char);
+int t_utf8_decode(const tByte *bytes4, tChar *out_char);
 
 #ifdef TANAKA_LISP_TEST
 void test_utf8_all();
