@@ -5,7 +5,7 @@
 
 #include "tanaka_type.h"
 
-int tanaka_utf8_decode(const uint8_t *bytes, int start, int len, TanakaChar *out_char);
+int tanaka_utf8_decode(const uint8_t *bytes, int start, int len, tChar *out_char);
 
 #ifdef TANAKA_LISP_TEST
 void test_utf8_all();
