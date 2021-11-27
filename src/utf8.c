@@ -16,7 +16,7 @@ int t_utf8_length(tByte first_byte) {
     }
 }
 
-int tanaka_utf8_decode(const tByte *bytes, int start, int len, tChar *out_char) {
+int t_utf8_decode(const tByte *bytes, int start, int len, tChar *out_char) {
     int n = 0;
     tByte byte = bytes[start + n];
 
@@ -43,7 +43,7 @@ static void test_utf8_decode_ascii_one() {
     int expected_ret = 1;
 
     uint32_t actual_char;
-    int actual_ret = tanaka_utf8_decode(input_bytes, input_start, input_len, &actual_char);
+    int actual_ret = t_utf8_decode(input_bytes, input_start, input_len, &actual_char);
 
     assert(actual_ret == expected_ret);
     assert(actual_char == expected_char);
