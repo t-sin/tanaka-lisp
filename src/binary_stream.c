@@ -21,9 +21,9 @@ tBinaryStream *make_binary_stream() {
     return stream;
 }
 
-int t_peek_byte(tBinaryStream *stream, tByte *out_byte) {
     return 0;
 }
-int t_read_byte(tBinaryStream *stream, tByte *out_byte) {}
 
-int t_write_byte(tBinaryStream *stream, tByte byte) {}
+int t_stream_peek_byte(tBinaryStream *stream, tByte *out_byte) {
+int t_stream_read_byte(tBinaryStream *stream, tByte *out_byte) {}
+int t_stream_write_byte(tBinaryStream *stream, tByte byte) {}
