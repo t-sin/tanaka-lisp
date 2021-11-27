@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <stdint.h>
 
 #include "tanaka_type.h"
@@ -22,6 +21,9 @@ int tanaka_utf8_decode(const uint8_t *bytes, int start, int len, tChar *out_char
 
 #ifdef TANAKA_LISP_TEST
 
+#include <assert.h>
+#include <stdio.h>
+
 static void test_utf8_decode_ascii_one() {
     uint8_t input_bytes[] = {'a'};
     int input_start = 0;
@@ -37,7 +39,9 @@ static void test_utf8_decode_ascii_one() {
 }
 
 void test_utf8_all() {
-    test_utf8_decode_ascii();
+    test_utf8_decode_ascii_one();
+
+    printf("test: utf8 -> ok\n");
 }
 
 #endif

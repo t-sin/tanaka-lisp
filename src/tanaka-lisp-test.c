@@ -7,5 +7,6 @@ int main(int argc, char **argv) {
 
     test_utf8_all();
 
+    printf("all tests ok.\n");
     return 0;
 }
