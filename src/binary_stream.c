@@ -31,21 +31,12 @@ static size_t stream_buffer_length(tBinaryStream *stream) {
     }
 }
 
-static size_t calculate_read_pos(tBinaryStream *stream) {
-    if (stream->head == 0 && stream->head < stream->tail) {
-        return STREAM_BUFFER_SIZE - 1;
-    } else {
-        return stream->head - 1;
-    }
-}
-
 int t_peek_byte(tBinaryStream *stream, tByte *out_byte) {
     if (stream == NULL || stream_buffer_length(stream) <= 0) {
         return STREAM_EMPTY;
     }
 
-    size_t read_pos = calculate_read_pos(stream);
-    *out_byte = stream->array[read_pos];
+    *out_byte = stream->array[stream->tail];
     return 1;
 }
 
@@ -58,8 +49,7 @@ int t_read_byte(tBinaryStream *stream, tByte *out_byte) {
         return STREAM_EMPTY;
     }
 
-    size_t read_pos = calculate_read_pos(stream);
-    *out_byte = stream->array[read_pos];
+    *out_byte = stream->array[stream->tail];
     proceed(&stream->tail);
 
     return 1;
