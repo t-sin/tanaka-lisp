@@ -8,7 +8,7 @@ TEST_OBJECT = tanaka-lisp-test.o
 $(PROGRAM): $(PROGRAM_OBJECT) $(OBJECTS)
 	gcc $(CFLAGS) $^ -o $@
 
-$(TEST_PROGRAM): CFLAGS += -D TANAKA_LISP_TEST -g -O0
+$(TEST_PROGRAM): CFLAGS += -D TANAKA_LISP_TEST -g -O0 -fsanitize=address
 $(TEST_PROGRAM): $(TEST_OBJECT) $(OBJECTS)
 	gcc $(CFLAGS) $^ -o $@
 
