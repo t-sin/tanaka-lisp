@@ -27,6 +27,10 @@ int t_stream_write_byte(tStream *stream, tByte byte) {
     return t_write_byte(stream->bstream, byte);
 }
 
+int t_stream_clear(tStream *stream) {
+    t_clear_stream(stream->bstream);
+}
+
 int t_stream_peek_char(tStream *stream, tChar *out_ch) {
     tByte byte;
     int ret = t_peek_byte(stream->bstream, &byte);

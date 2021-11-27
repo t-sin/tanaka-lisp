@@ -28,6 +28,9 @@ int t_read_byte(tBinaryStream *stream, tByte *out_byte);
 // Otherwise it returns a number of write, so always returns one.
 int t_write_byte(tBinaryStream *stream, tByte byte);
 
+// Clear stream contents.
+void t_clear_stream(tBinaryStream *stream);
+
 
 #ifdef TANAKA_LISP_TEST
 void test_binary_stream_all();

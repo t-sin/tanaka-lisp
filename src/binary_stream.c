@@ -66,6 +66,10 @@ int t_write_byte(tBinaryStream *stream, tByte byte) {
     return 1;
 }
 
+void t_clear_stream(tBinaryStream *stream) {
+    stream->tail = stream->head;
+}
+
 
 #ifdef TANAKA_LISP_TEST
 
