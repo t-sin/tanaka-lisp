@@ -5,9 +5,9 @@
 - [ ] echo REPL
     - [x] UTF-8 decoder
     - [x] binary streams
-    - [ ] text streams
+    - [x] text streams
 - [ ] basic data types in REPL
-    - [ ] boolean values `#t` and `#f`
+    - [x] boolean values `#t` and `#f`
     - [ ] integers
     - [ ] floating point numbers
     - [ ] dot pairs
