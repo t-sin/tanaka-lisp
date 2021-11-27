@@ -82,8 +82,10 @@ static void test_peek_byte_one() {
     tBinaryStream input = {input_buf, 1, 0};
     int expected_ret = 0;
     tByte expected_byte = 'a';
+    size_t expected_head = 1;
 
     verify_peek_byte(&input, expected_ret, expected_byte);
+    assert(input.head == expected_head);
 }
 
 void test_binary_stream_all() {
