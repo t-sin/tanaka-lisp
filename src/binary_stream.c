@@ -65,7 +65,16 @@ int t_stream_read_byte(tBinaryStream *stream, tByte *out_byte) {
     return 1;
 }
 
-int t_stream_write_byte(tBinaryStream *stream, tByte byte) {}
+int t_stream_write_byte(tBinaryStream *stream, tByte byte) {
+    if (stream == NULL || stream_buffer_length(stream) >= STREAM_BUFFER_SIZE) {
+        return STREAM_FULL;
+    }
+
+    stream->array[stream->tail] = byte;
+    proceed(&stream->head);
+
+    return 1;
+}
 
 
 #ifdef TANAKA_LISP_TEST
@@ -131,12 +140,30 @@ static void test_read_byte_one() {
     assert(input.tail == expected_tail);
 }
 
+static void test_write_byte_to_empty_stream() {
+    tByte input_byte = 'a';
+    int expected_ret = 1;
+    size_t expected_head = 1;
+    tByte expected_byte = 'a';
+
+    tByte stream_buf[STREAM_BUFFER_SIZE] = {};
+    tBinaryStream stream = {stream_buf, 0, 0};
+
+    int actual_ret = t_stream_write_byte(&stream, input_byte);
+
+    assert(actual_ret == expected_ret);
+    assert(stream.head == expected_head);
+    assert(stream.array[stream.head - 1] == expected_byte);
+}
+
 void test_binary_stream_all() {
     test_peek_byte_from_empty_stream();
     test_peek_byte_one();
 
     test_read_byte_from_empty_stream();
     test_read_byte_one();
+
+    test_write_byte_to_empty_stream();
 
     printf("test: binary stream -> ok\n");
 }
