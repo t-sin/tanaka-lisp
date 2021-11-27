@@ -8,7 +8,7 @@
     - [x] text streams
 - [ ] basic data types in REPL
     - [x] boolean values `#t` and `#f`
-    - [ ] integers
+    - [x] integers
     - [ ] floating point numbers
     - [ ] dot pairs
         - [ ] garbage collection
