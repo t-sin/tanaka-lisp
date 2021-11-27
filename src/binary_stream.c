@@ -49,8 +49,8 @@ int t_stream_peek_byte(tBinaryStream *stream, tByte *out_byte) {
     return 0;
 }
 
-static void proceed_head(tBinaryStream *stream) {
-    stream->head = (stream->head + 1) % STREAM_BUFFER_SIZE;
+static void proceed_tail(tBinaryStream *stream) {
+    stream->tail = (stream->tail + 1) % STREAM_BUFFER_SIZE;
 }
 
 int t_stream_read_byte(tBinaryStream *stream, tByte *out_byte) {
@@ -60,7 +60,7 @@ int t_stream_read_byte(tBinaryStream *stream, tByte *out_byte) {
 
     size_t read_pos = calculate_read_pos(stream);
     *out_byte = stream->array[read_pos];
-    proceed_head(stream);
+    proceed_tail(stream);
 
     return 1;
 }
@@ -96,10 +96,10 @@ static void test_peek_byte_one() {
     tBinaryStream input = {input_buf, 1, 0};
     int expected_ret = 0;
     tByte expected_byte = 'a';
-    size_t expected_head = 1;
+    size_t expected_tail = 0;
 
     verify_peek_byte(&input, expected_ret, expected_byte);
-    assert(input.head == expected_head);
+    assert(input.tail == expected_tail);
 }
 
 static void test_read_byte_from_empty_stream() {
@@ -125,10 +125,10 @@ static void test_read_byte_one() {
     tBinaryStream input = {input_buf, 1, 0};
     int expected_ret = 1;
     tByte expected_byte = 'a';
-    size_t expected_head = 2;
+    size_t expected_tail = 1;
 
     verify_read_byte(&input, expected_ret, expected_byte);
-    assert(input.head == expected_head);
+    assert(input.tail == expected_tail);
 }
 
 void test_binary_stream_all() {
