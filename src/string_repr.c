@@ -81,6 +81,23 @@ int tLisp_read(tStream *in, tLispObject *out_obj) {
             }
             num += ret;
 
+        } else if (ch == '-') {
+            t_stream_read_char(in, &ch);
+            num++;
+
+            ret = t_stream_peek_char(in, &ch);
+            if (ret <= 0 || !isdigit(ch)) {
+                return READ_FAILED;
+            }
+
+            ret = read_integer(in, out_obj);
+            if (ret <= 0) {
+                return READ_FAILED;
+            }
+
+            num += ret;
+            out_obj->o.intn = -out_obj->o.intn;
+
         } else {
             return num;
         }
@@ -93,6 +110,12 @@ int tLisp_read(tStream *in, tLispObject *out_obj) {
 
 static void print_integer(tStream *out, tLispObject *obj) {
     int n = obj->o.intn;
+
+    if (n < 0) {
+        t_stream_write_byte(out, '-');
+        n = -n;
+    }
+
     int l = 0;
     tByte buf[PRINT_BUFFER_SIZE];
 
