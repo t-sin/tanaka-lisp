@@ -30,7 +30,7 @@ int t_stream_write_byte(tStream *stream, tByte byte) {
 int t_stream_peek_char(tStream *stream, tChar *out_ch) {
     tByte byte;
     int ret = t_peek_byte(stream->bstream, &byte);
-    if (ret != 0) {
+    if (ret != 1) {
         return ret;
     }
 

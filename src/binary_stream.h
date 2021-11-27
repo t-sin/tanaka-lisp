@@ -15,17 +15,17 @@ tBinaryStream *make_binary_stream();
 
 // Sees a byte from head of the stream but its head is not proceeded.
 // If the stream is empty (when its head and tail are same), it returns STREAM_EMPTY.
-// Otherwise it returns a number of reads, so always returns zero.
+// Otherwise it returns a number of peek, so always returns one.
 int t_peek_byte(tBinaryStream *stream, tByte *out_byte);
 
 // Reads a byte from head of the stream head then proceeds its head.
 // If the stream is empty (when its head and tail are same), it returns STREAM_EMPTY.
-// Otherwise it returns a number of reads, so always returns one.
+// Otherwise it returns a number of read, so always returns one.
 int t_read_byte(tBinaryStream *stream, tByte *out_byte);
 
 // Writes a byte to at tail of the stream then proceeds its tail.
 // If the stream is full (when its head is at previous position of head), it returns STREAM_FULL.
-// Otherwise it returns a number of writes, so always returns one.
+// Otherwise it returns a number of write, so always returns one.
 int t_write_byte(tBinaryStream *stream, tByte byte);
 
 

@@ -46,7 +46,7 @@ int t_peek_byte(tBinaryStream *stream, tByte *out_byte) {
 
     size_t read_pos = calculate_read_pos(stream);
     *out_byte = stream->array[read_pos];
-    return 0;
+    return 1;
 }
 
 static void proceed(size_t *pos) {
@@ -103,7 +103,7 @@ static void verify_peek_byte(tBinaryStream *input, int expected_ret, tByte expec
 static void test_peek_byte_one() {
     tByte input_buf[STREAM_BUFFER_SIZE] = {'a', 0, 0};
     tBinaryStream input = {input_buf, 1, 0};
-    int expected_ret = 0;
+    int expected_ret = 1;
     tByte expected_byte = 'a';
     size_t expected_tail = 0;
 
