@@ -44,14 +44,13 @@ int t_stream_peek_char(tStream *stream, tChar *out_ch) {
     }
 
     tByte bytes[4];
-    switch (length) {
-    case 1:
-        bytes[0] = byte;
-        break;
+    for (int i = 0; i < length; i++) {
+        ret = t_peek_nth_byte(stream->bstream, i, &byte);
+        if (ret != 1) {
+            return STREAM_INVALID_UTF8_OCTETS;
+        }
 
-    default:
-        printf("NOT SUPPORTED!\n");
-        return STREAM_INVALID_UTF8_OCTETS;
+        bytes[i] = byte;
     }
 
     ret = t_utf8_decode(bytes, out_ch);
@@ -59,7 +58,7 @@ int t_stream_peek_char(tStream *stream, tChar *out_ch) {
         return STREAM_INVALID_UTF8_OCTETS;
     }
 
-    return length;
+    return 1;
 }
 
 int t_stream_read_char(tStream *stream, tChar *out_ch) {
@@ -84,7 +83,7 @@ int t_stream_unread_char(tStream *stream, tChar ch);
 #include <assert.h>
 #include <stdio.h>
 
-static verify_peek_char(tByte *input, size_t size, int eret, tChar ech) {
+static void verify_peek_char(tByte *input, size_t size, int eret, tChar ech) {
     tBinaryStream *bstream = make_binary_stream();
     for (int i = 0; i < size; i++) {
         t_write_byte(bstream, input[i]);
@@ -107,7 +106,44 @@ static void test_peek_char_one_byte() {
     verify_peek_char(input, len, expected_ret, expected_ch);
 }
 
-static verify_read_char(tByte *input, size_t size, int eret, tChar ech) {
+static void test_peek_char_two_bytes() {
+    tByte input[] = {0xce, 0xbb}; // 'λ'
+    int expected_ret = 1;
+    tChar expected_ch = 0x03bb;
+
+    int len = sizeof(input) / sizeof(input[0]);
+    verify_peek_char(input, len, expected_ret, expected_ch);
+}
+
+static void test_peek_char_three_bytes() {
+    tByte input[] = {0xe3, 0x81, 0x82}; // 'あ'
+    int expected_ret = 1;
+    tChar expected_ch = 0x03042;
+
+    int len = sizeof(input) / sizeof(input[0]);
+    verify_peek_char(input, len, expected_ret, expected_ch);
+}
+
+static void test_peek_char_four_bytes() {
+    tByte input[] = {0xf0, 0x9f, 0xa5, 0xb3}; // '🥳'
+    int expected_ret = 1;
+    tChar expected_ch = 0x1f973;
+
+    int len = sizeof(input) / sizeof(input[0]);
+    verify_peek_char(input, len, expected_ret, expected_ch);
+}
+
+static void test_peek_same_char_twice() {
+    tByte input[] = {0xce, 0xbb, 0xf0, 0x9f, 0xa5, 0xb3}; // '🥳'
+    int expected_ret = 1;
+    tChar expected_ch = 0x03bb;
+
+    int len = sizeof(input) / sizeof(input[0]);
+    verify_peek_char(input, len, expected_ret, expected_ch);
+    verify_peek_char(input, len, expected_ret, expected_ch);
+}
+
+static void verify_read_char(tByte *input, size_t size, int eret, tChar ech) {
     tBinaryStream *bstream = make_binary_stream();
     for (int i = 0; i < size; i++) {
         t_write_byte(bstream, input[i]);
@@ -132,6 +168,10 @@ static void test_read_char_one_byte() {
 
 void test_stream_all() {
     test_peek_char_one_byte();
+    test_peek_char_two_bytes();
+    test_peek_char_three_bytes();
+    test_peek_char_four_bytes();
+    test_peek_same_char_twice();
 
     test_read_char_one_byte();
 
