@@ -15,4 +15,9 @@ int t_stream_read_byte(tBinaryStream *stream, tByte *out_byte);
 
 int t_stream_write_byte(tBinaryStream *stream, tByte byte);
 
+
+#ifdef TANAKA_LISP_TEST
+void test_binary_stream_all();
+#endif
+
 #endif
