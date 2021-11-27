@@ -2,15 +2,29 @@
 
 #include "tanaka_type.h"
 
-int tanaka_utf8_decode(const uint8_t *bytes, int start, int len, tChar *out_char) {
-    int n = 0;
-    uint8_t byte = bytes[start + n];
+int t_utf8_length(tByte first_byte) {
+    if (!(first_byte & 0x80)) {
+        return 1;
+    } else if (first_byte & 0xc0) {
+        return 2;
+    } else if (first_byte & 0xe0) {
+        return 3;
+    } else if (first_byte & 0xf0) {
+        return 4;
+    } else {
+        return -1;
+    }
+}
 
-    if (!(byte & 0x80)) {
+int tanaka_utf8_decode(const tByte *bytes, int start, int len, tChar *out_char) {
+    int n = 0;
+    tByte byte = bytes[start + n];
+
+    switch (t_utf8_length(byte)) {
+    case 1:
         *out_char = byte;
         return n + 1;
-
-    } else {
+    default:
         return -1;
     }
 }

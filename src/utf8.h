@@ -5,6 +5,9 @@
 
 #include "tanaka_type.h"
 
+// Distinguishes UTF-8 octet length from the first byte.
+int t_utf8_length(tByte first_byte);
+
 // Decode UTF-8 octets.
 // If this reads valid bytes it returns a number of bytes read, otherwise -1.
 //
