@@ -56,7 +56,7 @@ int t_read_byte(tBinaryStream *stream, tByte *out_byte) {
 }
 
 int t_write_byte(tBinaryStream *stream, tByte byte) {
-    if (stream == NULL || stream_buffer_length(stream) >= STREAM_BUFFER_SIZE) {
+    if (stream == NULL || stream_buffer_length(stream) >= STREAM_BUFFER_SIZE - 1) {
         return STREAM_FULL;
     }
 
@@ -150,6 +150,17 @@ static void test_write_byte_to_empty_stream() {
     assert(stream.array[stream.head - 1] == expected_byte);
 }
 
+static void test_write_byte_to_full_stream() {
+    tByte stream_buf[STREAM_BUFFER_SIZE] = {};
+    // full stream := its head points to the previous element of its tail
+    tBinaryStream stream = {stream_buf, 12, 13};
+    tByte input_byte = 'a';
+    int expected_ret = STREAM_FULL;
+
+    int actual_ret = t_write_byte(&stream, input_byte);
+    assert(actual_ret == expected_ret);
+}
+
 void test_binary_stream_all() {
     test_peek_byte_from_empty_stream();
     test_peek_byte_one();
@@ -158,6 +169,7 @@ void test_binary_stream_all() {
     test_read_byte_one();
 
     test_write_byte_to_empty_stream();
+    test_write_byte_to_full_stream();
 
     printf("test: binary stream -> ok\n");
 }
