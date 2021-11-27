@@ -88,6 +88,7 @@ int main(int argc, char **argv) {
         }
 
         if (fgets(linebuf, LINE_SIZE, stdin) > 0) {
+            t_stream_clear(stream_stdin);
             for (int i = 0; linebuf[i] != '\n'; i++) {
                 t_stream_write_byte(stream_stdin, linebuf[i]);
             }
