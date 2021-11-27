@@ -2,8 +2,9 @@
 
 ## layer1 (Lisp layer)
 
-- [ ] echo REPL
+- [x] echo REPL
     - [x] UTF-8 decoder
+    - [x] UTF-8 encoder
     - [x] binary streams
     - [x] text streams
 - [ ] basic data types in REPL
@@ -54,8 +55,6 @@
     - [ ] array manipulations
     - [ ] string manipulations
     - [ ] hash table manipulations
-- [ ] file output
-    - [ ] UTF-8 encoder
 - [ ] `eval` function
 - [ ] file loading facility
 - [ ] preparation for layer2
