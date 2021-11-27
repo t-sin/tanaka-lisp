@@ -30,7 +30,13 @@ int t_stream_peek_char(tStream *stream, tChar *out_ch);
 // - number of UTF-8 bytes: otherwise
 int t_stream_read_char(tStream *stream, tChar *out_ch);
 
+// Writes an Unicode character into `stream`.
+// It returns:
+// - STREAM_FULL: when stream is full
+// - STREAM_INVALID_UTF8_OCTETS: when UTF-8 decoding fails
+// - number of UTF-8 bytes: otherwise
 int t_stream_write_char(tStream *stream, tChar ch);
+
 int t_stream_unread_char(tStream *stream, tChar ch);
 
 #ifdef TANAKA_LISP_TEST

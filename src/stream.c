@@ -75,7 +75,22 @@ int t_stream_read_char(tStream *stream, tChar *out_ch) {
     return ret;
 }
 
-int t_stream_write_char(tStream *stream, tChar ch);
+int t_stream_write_char(tStream *stream, tChar ch) {
+    tByte bytes[4];
+    int length = t_utf8_encode(ch, bytes);
+    int num_free = t_stream_count_free_bytes(stream->bstream);
+
+    if (length > num_free - 1) {
+        return STREAM_FULL;
+    }
+
+    for (int i = 0; i < length; i++) {
+        t_write_byte(stream->bstream, bytes[i]);
+    }
+
+    return length;
+}
+
 int t_stream_unread_char(tStream *stream, tChar ch);
 
 
@@ -202,6 +217,44 @@ static void test_read_char_twice() {
     assert(actual_ch == expected_ch2);
 }
 
+static void verify_write_char_patterns(tStream *stream, int num, tChar *input, int *erets, tByte **ebytes) {
+    for (int n = 0; n < num; n++) {
+        int actual_ret = t_stream_write_char(stream, input[n]);
+
+        assert(actual_ret == erets[n]);
+        for (int i = 0; i < actual_ret; i++) {
+            tByte actual_byte;
+            t_read_byte(stream->bstream, &actual_byte);
+            assert(actual_byte == ebytes[n][i]);
+        }
+    }
+}
+
+static void test_write_char_one() {
+    tChar input[] = {0x3042}; // 'あ'
+    int expected_rets[] = {3};
+    tByte ebytes1[] = {0xe3, 0x81, 0x82};
+    tByte *expected_bytes[1] = {ebytes1};
+
+    tBinaryStream *bstream = make_binary_stream();
+    tStream stream = {bstream};
+
+    verify_write_char_patterns(&stream, 1, input, expected_rets, expected_bytes);
+}
+
+static void test_write_char_two() {
+    tChar input[] = {0x3042, 0x1f973}; // 'あ', '🥳'
+    int expected_rets[] = {3, 4};
+    tByte ebytes1[] = {0xe3, 0x81, 0x82};
+    tByte ebytes2[] = {0xf0, 0x9f, 0xa5, 0xb3};
+    tByte *expected_bytes[2] = {ebytes1, ebytes2};
+
+    tBinaryStream *bstream = make_binary_stream();
+    tStream stream = {bstream};
+
+    verify_write_char_patterns(&stream, 1, input, expected_rets, expected_bytes);
+}
+
 void test_stream_all() {
     test_peek_char_one_byte();
     test_peek_char_two_bytes();
@@ -211,6 +264,9 @@ void test_stream_all() {
 
     test_read_char_one_byte();
     test_read_char_twice();
+
+    test_write_char_one();
+    test_write_char_two();
 
     printf("test: stream -> ok\n");
 }
