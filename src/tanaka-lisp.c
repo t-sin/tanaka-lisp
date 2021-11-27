@@ -24,7 +24,7 @@ int tLisp_read(tStream *in, tLispObject *out_obj) {
             num++;
 
             if (t_stream_peek_char(in, &ch) <= 0) {
-                return READ_MORE;
+                return READ_FAILED;
             }
             t_stream_read_char(in, &ch);
             num++;
