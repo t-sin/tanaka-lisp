@@ -21,7 +21,7 @@ tBinaryStream *make_binary_stream() {
     return stream;
 }
 
-static size_t stream_buffer_length(tBinaryStream *stream) {
+size_t t_stream_count_bytes(tBinaryStream *stream) {
     if (stream->head == stream->tail) {
         return 0;
     } else if (stream->head > stream->tail) {
@@ -31,8 +31,12 @@ static size_t stream_buffer_length(tBinaryStream *stream) {
     }
 }
 
+size_t t_stream_count_free_bytes(tBinaryStream *stream) {
+    return STREAM_BUFFER_SIZE - t_stream_count_bytes(stream);
+}
+
 int t_peek_nth_byte(tBinaryStream *stream, size_t n, tByte *out_byte) {
-    if (stream == NULL || stream_buffer_length(stream) <= n) {
+    if (stream == NULL || t_stream_count_bytes(stream) <= n) {
         return STREAM_EMPTY;
     }
 
@@ -45,7 +49,7 @@ static void proceed(size_t *pos) {
 }
 
 int t_read_byte(tBinaryStream *stream, tByte *out_byte) {
-    if (stream == NULL || stream_buffer_length(stream) <= 0) {
+    if (stream == NULL || t_stream_count_bytes(stream) <= 0) {
         return STREAM_EMPTY;
     }
 
@@ -56,7 +60,11 @@ int t_read_byte(tBinaryStream *stream, tByte *out_byte) {
 }
 
 int t_write_byte(tBinaryStream *stream, tByte byte) {
-    if (stream == NULL || stream_buffer_length(stream) >= STREAM_BUFFER_SIZE - 1) {
+    // When the stream is full, head is placed at the previous byte of tail.
+    // In this case, the head points a free byte but it never be used while the stream is full
+    // because the head cannot go ahead by the tail.
+    // This also means the maximum counts of bytes filled is always `STREAM_BUFFER_SIZE - 1`.
+    if (stream == NULL || t_stream_count_bytes(stream) >= STREAM_BUFFER_SIZE - 1) {
         return STREAM_FULL;
     }
 

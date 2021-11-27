@@ -13,6 +13,12 @@ typedef struct tBinaryStream_t tBinaryStream;
 
 tBinaryStream *make_binary_stream();
 
+// Counts a number of bytes stored in `stream`.
+size_t t_stream_count_bytes(tBinaryStream *stream);
+
+// Counts a number of free bytes in `stream`.
+size_t t_stream_count_free_bytes(tBinaryStream *stream);
+
 // Sees a `n`-th byte from head of the stream but its head is not proceeded.
 // If the stream is empty (when `n`-th byte from head and tail are same), it returns STREAM_EMPTY.
 // Otherwise it returns a number of peek, so always returns one.
