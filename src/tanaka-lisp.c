@@ -6,7 +6,7 @@
 
 #include "binary_stream.h"
 #include "stream.h"
-#include "read.h"
+#include "string_repr.h"
 
 char *tlisp_version = "0.0.0";
 
@@ -14,18 +14,6 @@ int tLisp_eval(tLispObject *obj, tLispObject *out_obj) {
     *out_obj = *obj;
 
     return 0;
-}
-
-void tLisp_print(tStream *out, tLispObject *obj) {
-    switch (obj->type) {
-    case BOOLE:
-        t_stream_write_byte(out, '#');
-        t_stream_write_byte(out, obj->o.bool == 0 ? 'f' : 't');
-        break;
-
-    default:
-        break;
-    }
 }
 
 #define LINE_SIZE 512
