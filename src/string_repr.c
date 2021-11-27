@@ -42,7 +42,10 @@ static int read_integer(tStream *in, tLispObject *out_obj) {
 
     while (1) {
         int ret = t_stream_peek_char(in, &ch);
-        if (ret < 0 || !isdigit(ch)) {
+        if (!isdigit(ch)) {
+            return READ_FAILED;
+
+        } else if (ret < 0) {
             out_obj->type = INTEGER;
             out_obj->o.intn = n;
 
