@@ -2,9 +2,6 @@
 
 #include "tanaka_type.h"
 
-// Decode UTF-8 octet sequence.
-// If this reads valid bytes it returns a number of bytes read, otherwise -1.
-// cf. https://datatracker.ietf.org/doc/html/rfc3629#section-4
 int tanaka_utf8_decode(const uint8_t *bytes, int start, int len, tChar *out_char) {
     int n = 0;
     uint8_t byte = bytes[start + n];
