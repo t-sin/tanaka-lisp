@@ -17,6 +17,10 @@ int t_utf8_length(tByte first_byte);
 // Specification fo UTF-8 octets: https://datatracker.ietf.org/doc/html/rfc3629#section-4
 int t_utf8_decode(const tByte *bytes4, tChar *out_char);
 
+// Encodes Unicode codepoint and write bytes into `out_4bytes`.
+// It assumes that `out_bytes4` has 4-byte length.
+int t_utf8_encode(tChar ch, tByte *out_bytes4);
+
 #ifdef TANAKA_LISP_TEST
 void test_utf8_all();
 #endif

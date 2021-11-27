@@ -56,6 +56,30 @@ int t_utf8_decode(const tByte *bytes4, tChar *out_char) {
     }
 }
 
+int t_utf8_encode(tChar ch, tByte *out_bytes4) {
+    if (ch <= 0x007f) {
+        out_bytes4[0] = (ch & 0x007f);
+        return 1;
+
+    } else if (ch >= 0x0080 && ch <=0x07ff) {
+        out_bytes4[0] = 0xc0 | ((ch >> 6) & 0x1f);
+        out_bytes4[1] = 0x80 | (ch & 0x3f);
+        return 2;
+
+    } else if (ch >= 0x0800 && ch <=0xffff) {
+        out_bytes4[0] = 0xe0 | ((ch >> 12) & 0x0f);
+        out_bytes4[1] = 0x80 | ((ch >> 6) & 0x3f);
+        out_bytes4[2] = 0x80 | (ch & 0x003f);
+        return 3;
+
+    } else if (ch >= 0x10000 && ch <=0x10ffff) {
+        out_bytes4[0] = 0xf0 | ((ch >> 18) & 0x07);
+        out_bytes4[1] = 0x80 | ((ch >> 12) & 0x3f);
+        out_bytes4[2] = 0x80 | ((ch >> 6) & 0x3f);
+        out_bytes4[3] = 0x80 | (ch & 0x3f);
+        return 4;
+    }
+}
 
 #ifdef TANAKA_LISP_TEST
 
@@ -104,11 +128,58 @@ static void test_utf8_decode_partying_face_one() {
     verify_utf8_decode(input, expected_ret, expected_ch);
 }
 
+static void verify_utf8_encode(tChar input, int eret, tByte *ebytes) {
+    tByte actual_bytes[INPUT_SIZE];
+    int actual_ret = t_utf8_encode(input, actual_bytes);
+
+    assert(actual_ret == eret);
+    for (int i = 0; i < eret; i++) {
+        assert(actual_bytes[i] == ebytes[i]);
+    }
+}
+
+static void test_utf8_encode_ascii() {
+    tChar input = 'a';
+    int expected_ret = 1;
+    tByte expected_bytes[INPUT_SIZE] = {'a'};
+
+    verify_utf8_encode(input, expected_ret, expected_bytes);
+}
+
+static void test_utf8_encode_greek() {
+    tChar input = 0x03bb; // 'λ'
+    int expected_ret = 2;
+    tByte expected_bytes[INPUT_SIZE] = {0xce, 0xbb};
+
+    verify_utf8_encode(input, expected_ret, expected_bytes);
+}
+
+static void test_utf8_encode_hiragana() {
+    tChar input = 0x3042; // あ
+    int expected_ret = 3;
+    tByte expected_bytes[INPUT_SIZE] = {0xe3, 0x81, 0x82};
+
+    verify_utf8_encode(input, expected_ret, expected_bytes);
+}
+
+static void test_utf8_encode_partying_face() {
+    tChar input = 0x1f973; // 🥳
+    int expected_ret = 4;
+    tByte expected_bytes[INPUT_SIZE] = {0xf0, 0x9f, 0xa5, 0xb3};
+
+    verify_utf8_encode(input, expected_ret, expected_bytes);
+}
+
 void test_utf8_all() {
     test_utf8_decode_ascii_one();
     test_utf8_decode_greek_one();
     test_utf8_decode_hiragana_one();
     test_utf8_decode_partying_face_one();
+
+    test_utf8_encode_ascii();
+    test_utf8_encode_greek();
+    test_utf8_encode_hiragana();
+    test_utf8_encode_partying_face();
 
     printf("test: utf8 -> ok\n");
 }
