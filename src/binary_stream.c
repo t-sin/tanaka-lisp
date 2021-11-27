@@ -16,7 +16,7 @@ tBinaryStream *make_binary_stream() {
 
     stream->array = (tByte *)malloc(sizeof(tByte) * STREAM_BUFFER_SIZE);
     stream->head = 0;
-    stream->head = 0;
+    stream->tail = 0;
 
     return stream;
 }
