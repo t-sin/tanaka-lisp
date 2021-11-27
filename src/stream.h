@@ -6,6 +6,8 @@
 
 typedef struct tStream_t tStream;
 
+#define STREAM_INVALID_UTF8_OCTETS -3
+
 tStream *make_stream(tBinaryStream *bstream);
 
 // These are thin wrapper of binary_stream.h functions.

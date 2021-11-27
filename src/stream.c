@@ -3,6 +3,7 @@
 #include "tanaka_type.h"
 #include "binary_stream.h"
 #include "stream.h"
+#include "utf8.h"
 
 typedef struct tStream_t {
     tBinaryStream *bstream;
@@ -26,7 +27,37 @@ int t_stream_write_byte(tStream *stream, tByte byte) {
     return t_write_byte(stream->bstream, byte);
 }
 
-int t_stream_peek_char(tStream *stream, tChar *out_ch);
+int t_stream_peek_char(tStream *stream, tChar *out_ch) {
+    tByte byte;
+    int ret = t_peek_byte(stream->bstream, &byte);
+    if (ret != 0) {
+        return ret;
+    }
+
+    int length = t_utf8_length(byte);
+    if (length == -1) {
+        return STREAM_INVALID_UTF8_OCTETS;
+    }
+
+    tByte bytes[4];
+    switch (length) {
+    case 1:
+        bytes[0] = byte;
+        break;
+
+    default:
+        printf("NOT SUPPORTED!\n");
+        return STREAM_INVALID_UTF8_OCTETS;
+    }
+
+    ret = t_utf8_decode(bytes, 0, 4, out_ch);
+    if (ret == UTF8_INVALID_OCTETS) {
+        return STREAM_INVALID_UTF8_OCTETS;
+    }
+
+    return 0;
+}
+
 int t_stream_read_char(tStream *stream, tChar *out_ch);
 int t_stream_write_char(tStream *stream, tChar ch);
 int t_stream_unread_char(tStream *stream, tChar ch);
@@ -36,7 +67,32 @@ int t_stream_unread_char(tStream *stream, tChar ch);
 #include <assert.h>
 #include <stdio.h>
 
+static verify_peek_char(tByte *input, size_t size, int eret, tChar ech) {
+    tBinaryStream *bstream = make_binary_stream();
+    for (int i = 0; i < size; i++) {
+        t_write_byte(bstream, input[i]);
+    }
+    tStream stream = {bstream};
+
+    tChar actual_ch;
+    int actual_ret = t_stream_peek_char(&stream, &actual_ch);
+
+    assert(actual_ret == eret);
+    assert(actual_ch == ech);
+}
+
+static void test_peek_char_one_byte() {
+    tByte input[] = {'a'};
+    int expected_ret = 0;
+    tChar expected_ch = 'a';
+
+    int len = sizeof(input) / sizeof(input[0]);
+    verify_peek_char(input, len, expected_ret, expected_ch);
+}
+
 void test_stream_all() {
+    test_peek_char_one_byte();
+
     printf("test: stream -> ok\n");
 }
 #endif
