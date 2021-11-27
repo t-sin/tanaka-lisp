@@ -70,7 +70,7 @@ int t_write_byte(tBinaryStream *stream, tByte byte) {
         return STREAM_FULL;
     }
 
-    stream->array[stream->tail] = byte;
+    stream->array[stream->head] = byte;
     proceed(&stream->head);
 
     return 1;
