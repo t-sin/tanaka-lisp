@@ -10,10 +10,10 @@ typedef struct tBinaryStream_t tBinaryStream;
 
 tBinaryStream *make_binary_stream();
 
-int t_stream_peek_byte(tBinaryStream *stream, tByte *out_byte);
-int t_stream_read_byte(tBinaryStream *stream, tByte *out_byte);
+int t_peek_byte(tBinaryStream *stream, tByte *out_byte);
+int t_read_byte(tBinaryStream *stream, tByte *out_byte);
 
-int t_stream_write_byte(tBinaryStream *stream, tByte byte);
+int t_write_byte(tBinaryStream *stream, tByte byte);
 
 
 #ifdef TANAKA_LISP_TEST

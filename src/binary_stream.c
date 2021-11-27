@@ -39,7 +39,7 @@ static size_t calculate_read_pos(tBinaryStream *stream) {
     }
 }
 
-int t_stream_peek_byte(tBinaryStream *stream, tByte *out_byte) {
+int t_peek_byte(tBinaryStream *stream, tByte *out_byte) {
     if (stream == NULL || stream_buffer_length(stream) <= 0) {
         return STREAM_EMPTY;
     }
@@ -53,7 +53,7 @@ static void proceed(size_t *pos) {
     *pos = (*pos + 1) % STREAM_BUFFER_SIZE;
 }
 
-int t_stream_read_byte(tBinaryStream *stream, tByte *out_byte) {
+int t_read_byte(tBinaryStream *stream, tByte *out_byte) {
     if (stream == NULL || stream_buffer_length(stream) <= 0) {
         return STREAM_EMPTY;
     }
@@ -65,7 +65,7 @@ int t_stream_read_byte(tBinaryStream *stream, tByte *out_byte) {
     return 1;
 }
 
-int t_stream_write_byte(tBinaryStream *stream, tByte byte) {
+int t_write_byte(tBinaryStream *stream, tByte byte) {
     if (stream == NULL || stream_buffer_length(stream) >= STREAM_BUFFER_SIZE) {
         return STREAM_FULL;
     }
@@ -87,14 +87,14 @@ static void test_peek_byte_from_empty_stream() {
     int expected_ret = STREAM_EMPTY;
 
     tByte actual_byte;
-    int actual_ret = t_stream_peek_byte(&input, &actual_byte);
+    int actual_ret = t_peek_byte(&input, &actual_byte);
 
     assert(actual_ret == expected_ret);
 }
 
 static void verify_peek_byte(tBinaryStream *input, int expected_ret, tByte expected_byte) {
     tByte actual_byte;
-    int actual_ret = t_stream_peek_byte(input, &actual_byte);
+    int actual_ret = t_peek_byte(input, &actual_byte);
 
     assert(actual_ret == expected_ret);
     assert(actual_byte == expected_byte);
@@ -116,14 +116,14 @@ static void test_read_byte_from_empty_stream() {
     int expected_ret = STREAM_EMPTY;
 
     tByte actual_byte;
-    int actual_ret = t_stream_read_byte(&input, &actual_byte);
+    int actual_ret = t_read_byte(&input, &actual_byte);
 
     assert(actual_ret == expected_ret);
 }
 
 static void verify_read_byte(tBinaryStream *input, int expected_ret, tByte expected_byte) {
     tByte actual_byte;
-    int actual_ret = t_stream_read_byte(input, &actual_byte);
+    int actual_ret = t_read_byte(input, &actual_byte);
 
     assert(actual_ret == expected_ret);
     assert(actual_byte == expected_byte);
@@ -149,7 +149,7 @@ static void test_write_byte_to_empty_stream() {
     tByte stream_buf[STREAM_BUFFER_SIZE] = {};
     tBinaryStream stream = {stream_buf, 0, 0};
 
-    int actual_ret = t_stream_write_byte(&stream, input_byte);
+    int actual_ret = t_write_byte(&stream, input_byte);
 
     assert(actual_ret == expected_ret);
     assert(stream.head == expected_head);
