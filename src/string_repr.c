@@ -111,6 +111,11 @@ int tLisp_read(tStream *in, tLispObject *out_obj) {
 static void print_integer(tStream *out, tLispObject *obj) {
     int n = obj->o.intn;
 
+    if (n == 0) {
+        t_stream_write_byte(out, '0');
+        return;
+    }
+
     if (n < 0) {
         t_stream_write_byte(out, '-');
         n = -n;
