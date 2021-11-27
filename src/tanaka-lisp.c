@@ -110,6 +110,7 @@ int main(int argc, char **argv) {
 
             tLisp_print(stream_stdout, &eobj);
 
+            printf("=> ");
             tByte b;
             while (t_stream_read_byte(stream_stdout, &b) > 0) {
                 fputc(b, stdout);
