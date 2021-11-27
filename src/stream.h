@@ -16,8 +16,20 @@ int t_stream_read_byte(tStream *stream, tByte *out_byte);
 int t_stream_write_byte(tStream *stream, tByte byte);
 int t_stream_clear(tStream *stream);
 
+// Sees an Unicode character but stream tail is not proceeded.
+// It returns:
+// - STREAM_EMPTY: when stream is empty
+// - STREAM_INVALID_UTF8_OCTETS: when UTF-8 decoding fails
+// - number of UTF-8 bytes: otherwise
 int t_stream_peek_char(tStream *stream, tChar *out_ch);
+
+// Reads an Unicode character then proceeds stream tail.
+// It returns:
+// - STREAM_EMPTY: when stream is empty
+// - STREAM_INVALID_UTF8_OCTETS: when UTF-8 decoding fails
+// - number of UTF-8 bytes: otherwise
 int t_stream_read_char(tStream *stream, tChar *out_ch);
+
 int t_stream_write_char(tStream *stream, tChar ch);
 int t_stream_unread_char(tStream *stream, tChar ch);
 

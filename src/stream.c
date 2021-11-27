@@ -58,7 +58,7 @@ int t_stream_peek_char(tStream *stream, tChar *out_ch) {
         return STREAM_INVALID_UTF8_OCTETS;
     }
 
-    return 1;
+    return length;
 }
 
 int t_stream_read_char(tStream *stream, tChar *out_ch) {
@@ -108,7 +108,7 @@ static void test_peek_char_one_byte() {
 
 static void test_peek_char_two_bytes() {
     tByte input[] = {0xce, 0xbb}; // 'λ'
-    int expected_ret = 1;
+    int expected_ret = 2;
     tChar expected_ch = 0x03bb;
 
     int len = sizeof(input) / sizeof(input[0]);
@@ -117,7 +117,7 @@ static void test_peek_char_two_bytes() {
 
 static void test_peek_char_three_bytes() {
     tByte input[] = {0xe3, 0x81, 0x82}; // 'あ'
-    int expected_ret = 1;
+    int expected_ret = 3;
     tChar expected_ch = 0x03042;
 
     int len = sizeof(input) / sizeof(input[0]);
@@ -126,21 +126,33 @@ static void test_peek_char_three_bytes() {
 
 static void test_peek_char_four_bytes() {
     tByte input[] = {0xf0, 0x9f, 0xa5, 0xb3}; // '🥳'
-    int expected_ret = 1;
+    int expected_ret = 4;
     tChar expected_ch = 0x1f973;
 
     int len = sizeof(input) / sizeof(input[0]);
     verify_peek_char(input, len, expected_ret, expected_ch);
 }
 
-static void test_peek_same_char_twice() {
+static void test_peek_char_twice() {
     tByte input[] = {0xce, 0xbb, 0xf0, 0x9f, 0xa5, 0xb3}; // '🥳'
-    int expected_ret = 1;
+    int expected_ret = 2;
     tChar expected_ch = 0x03bb;
 
     int len = sizeof(input) / sizeof(input[0]);
-    verify_peek_char(input, len, expected_ret, expected_ch);
-    verify_peek_char(input, len, expected_ret, expected_ch);
+    tBinaryStream *bstream = make_binary_stream();
+    for (int i = 0; i < len; i++) {
+        t_write_byte(bstream, input[i]);
+    }
+    tStream stream = {bstream};
+
+    tChar actual_ch;
+    int actual_ret = t_stream_peek_char(&stream, &actual_ch);
+    assert(actual_ret == expected_ret);
+    assert(actual_ch == expected_ch);
+
+    actual_ret = t_stream_peek_char(&stream, &actual_ch);
+    assert(actual_ret == expected_ret);
+    assert(actual_ch == expected_ch);
 }
 
 static void verify_read_char(tByte *input, size_t size, int eret, tChar ech) {
@@ -166,14 +178,39 @@ static void test_read_char_one_byte() {
     verify_read_char(input, len, expected_ret, expected_ch);
 }
 
+static void test_read_char_twice() {
+    tByte input[] = {0xce, 0xbb, 0xf0, 0x9f, 0xa5, 0xb3}; // '🥳'
+    int expected_ret1 = 2;
+    int expected_ret2 = 4;
+    tChar expected_ch1 = 0x03bb;
+    tChar expected_ch2 = 0x1f973;
+
+    int len = sizeof(input) / sizeof(input[0]);
+    tBinaryStream *bstream = make_binary_stream();
+    for (int i = 0; i < len; i++) {
+        t_write_byte(bstream, input[i]);
+    }
+    tStream stream = {bstream};
+
+    tChar actual_ch;
+    int actual_ret = t_stream_read_char(&stream, &actual_ch);
+    assert(actual_ret == expected_ret1);
+    assert(actual_ch == expected_ch1);
+
+    actual_ret = t_stream_read_char(&stream, &actual_ch);
+    assert(actual_ret == expected_ret2);
+    assert(actual_ch == expected_ch2);
+}
+
 void test_stream_all() {
     test_peek_char_one_byte();
     test_peek_char_two_bytes();
     test_peek_char_three_bytes();
     test_peek_char_four_bytes();
-    test_peek_same_char_twice();
+    test_peek_char_twice();
 
     test_read_char_one_byte();
+    test_read_char_twice();
 
     printf("test: stream -> ok\n");
 }
