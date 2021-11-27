@@ -9,7 +9,8 @@
 char *tlisp_version = "0.0.0";
 
 #define READ_NO_INPUT 0
-#define READ_FAILED -1
+#define READ_MORE -1
+#define READ_FAILED -2
 
 int tLisp_read(tStream *in, tLispObject *out_obj) {
     size_t num = 0;
@@ -23,7 +24,7 @@ int tLisp_read(tStream *in, tLispObject *out_obj) {
             num++;
 
             if (t_stream_peek_char(in, &ch) <= 0) {
-                return READ_FAILED;
+                return READ_MORE;
             }
             t_stream_read_char(in, &ch);
             num++;
@@ -36,8 +37,9 @@ int tLisp_read(tStream *in, tLispObject *out_obj) {
             case 't':
                 out_obj->type = BOOLE;
                 out_obj->o.bool = 1;
+                break;
             default:
-                return num;
+                return READ_FAILED;
             }
             break;
 
@@ -96,10 +98,10 @@ int main(int argc, char **argv) {
             tLispObject obj;
             int ret = tLisp_read(stream_stdin, &obj);
 
-            if (ret == 0) {
-                continue;
-            } else if (ret == -1) {
+            if (ret == READ_MORE) {
                 more_input_needed = 1;
+                continue;
+            } else if (ret <= 0) {
                 continue;
             }
 
