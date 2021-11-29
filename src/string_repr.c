@@ -18,13 +18,13 @@ static int read_sharp(tStream *in, tLispObject *out_obj) {
 
     switch (ch) {
     case 'f':
-        out_obj->type = BOOLE;
-        out_obj->o.bool = 0;
+        out_obj->type = T_BOOL;
+        out_obj->o.primitive = 0;
         break;
 
     case 't':
-        out_obj->type = BOOLE;
-        out_obj->o.bool = 1;
+        out_obj->type = T_BOOL;
+        out_obj->o.primitive = 1;
         break;
 
     default:
@@ -46,8 +46,8 @@ static int read_integer(tStream *in, tLispObject *out_obj) {
             return READ_FAILED;
 
         } else if (ret < 0) {
-            out_obj->type = INTEGER;
-            out_obj->o.intn = n;
+            out_obj->type = T_INTEGER;
+            out_obj->o.primitive = n;
 
             return num;
         }
@@ -96,7 +96,7 @@ int tLisp_read(tStream *in, tLispObject *out_obj) {
             }
 
             num += ret;
-            out_obj->o.intn = -out_obj->o.intn;
+            out_obj->o.primitive = -out_obj->o.primitive;
 
         } else {
             return num;
@@ -109,7 +109,7 @@ int tLisp_read(tStream *in, tLispObject *out_obj) {
 #define PRINT_BUFFER_SIZE 1024
 
 static void print_integer(tStream *out, tLispObject *obj) {
-    int n = obj->o.intn;
+    tInt n = obj->o.primitive;
 
     if (n == 0) {
         t_stream_write_byte(out, '0');
@@ -136,12 +136,12 @@ static void print_integer(tStream *out, tLispObject *obj) {
 
 void tLisp_print(tStream *out, tLispObject *obj) {
     switch (obj->type) {
-    case BOOLE:
+    case T_BOOL:
         t_stream_write_char(out, '#');
-        t_stream_write_char(out, obj->o.bool == 0 ? 'f' : 't');
+        t_stream_write_char(out, obj->o.primitive == 0 ? 'f' : 't');
         break;
 
-    case INTEGER:
+    case T_INTEGER:
         print_integer(out, obj);
         break;
 
