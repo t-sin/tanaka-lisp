@@ -1,7 +1,7 @@
 #ifndef tanaka_lisp_stream
 #define tanaka_lisp_stream
 
-#include "tanaka_type.h"
+#include "tanaka-lisp.h"
 
 // The stream object. It treats binary data but can be read/write as characters.
 typedef struct tStream_t tStream;

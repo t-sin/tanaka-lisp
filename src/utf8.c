@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#include "tanaka_type.h"
+#include "tanaka-lisp.h"
 #include "utf8.h"
 
 int t_utf8_length(tByte first_byte) {

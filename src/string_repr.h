@@ -1,6 +1,9 @@
 #ifndef tanaka_lisp_string_repr
 #define tanaka_lisp_string_repr
 
+#include "tanaka-lisp.h"
+#include "stream.h"
+
 #define READ_NO_INPUT 0
 #define READ_MORE -1
 #define READ_FAILED -2

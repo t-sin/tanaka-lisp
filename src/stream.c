@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include "tanaka_type.h"
+#include "tanaka-lisp.h"
 #include "utf8.h"
 #include "stream.h"
 

@@ -1,5 +1,5 @@
-#ifndef tanaka_lisp_type
-#define tanaka_lisp_type
+#ifndef tanaka_lisp
+#define tanaka_lisp
 
 #include <stdint.h>
 

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "tanaka_type.h"
+#include "tanaka-lisp.h"
 
 #include "stream.h"
 #include "string_repr.h"

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "tanaka_type.h"
+#include "tanaka-lisp.h"
 
 #define UTF8_INVALID_OCTETS -1
 
