@@ -1,39 +1,87 @@
 #include <stdlib.h>
 
 #include "tanaka_type.h"
-#include "binary_stream.h"
-#include "stream.h"
 #include "utf8.h"
+#include "stream.h"
+
+#define STREAM_BUFFER_SIZE 1024
 
 typedef struct tStream_t {
-    tBinaryStream *bstream;
+    tByte *array;
+    size_t head;
+    size_t tail;
 } tStream;
 
-tStream *make_stream(tBinaryStream *bstream) {
+tStream *make_stream() {
     tStream *stream = (tStream *)malloc(sizeof(tStream));
-    stream->bstream = bstream;
+
+    stream->array = (tByte *)malloc(sizeof(tByte) * STREAM_BUFFER_SIZE);
+    stream->head = 0;
+    stream->tail = 0;
 
     return stream;
 }
 
-int t_stream_peek_nth_byte(tStream *stream, size_t nth, tByte *out_byte) {
-    return t_peek_nth_byte(stream->bstream, nth, out_byte);
+void t_stream_clear(tStream *stream) {
+    stream->tail = stream->head;
+}
+
+size_t t_stream_count_bytes(tStream *stream) {
+    if (stream->head == stream->tail) {
+        return 0;
+    } else if (stream->head > stream->tail) {
+        return stream->head - stream->tail;
+    } else {
+        return stream->head + (STREAM_BUFFER_SIZE - stream->tail);
+    }
+}
+
+size_t t_stream_count_free_bytes(tStream *stream) {
+    return STREAM_BUFFER_SIZE - t_stream_count_bytes(stream);
+}
+
+int t_stream_peek_nth_byte(tStream *stream, size_t n, tByte *out_byte) {
+    if (stream == NULL || t_stream_count_bytes(stream) <= n) {
+        return STREAM_EMPTY;
+    }
+
+    *out_byte = stream->array[stream->tail + n];
+    return 1;
+}
+
+static void proceed(size_t *pos) {
+    *pos = (*pos + 1) % STREAM_BUFFER_SIZE;
 }
 
 int t_stream_read_byte(tStream *stream, tByte *out_byte) {
-    return t_read_byte(stream->bstream, out_byte);
-}
-int t_stream_write_byte(tStream *stream, tByte byte) {
-    return t_write_byte(stream->bstream, byte);
+    if (stream == NULL || t_stream_count_bytes(stream) <= 0) {
+        return STREAM_EMPTY;
+    }
+
+    *out_byte = stream->array[stream->tail];
+    proceed(&stream->tail);
+
+    return 1;
 }
 
-int t_stream_clear(tStream *stream) {
-    t_clear_stream(stream->bstream);
+int t_stream_write_byte(tStream *stream, tByte byte) {
+    // When the stream is full, head is placed at the previous byte of tail.
+    // In this case, the head points a free byte but it never be used while the stream is full
+    // because the head cannot go ahead by the tail.
+    // This also means the maximum counts of bytes filled is always `STREAM_BUFFER_SIZE - 1`.
+    if (stream == NULL || t_stream_count_bytes(stream) >= STREAM_BUFFER_SIZE - 1) {
+        return STREAM_FULL;
+    }
+
+    stream->array[stream->head] = byte;
+    proceed(&stream->head);
+
+    return 1;
 }
 
 int t_stream_peek_char(tStream *stream, tChar *out_ch) {
     tByte byte;
-    int ret = t_peek_nth_byte(stream->bstream, 0, &byte);
+    int ret = t_stream_peek_nth_byte(stream, 0, &byte);
     if (ret != 1) {
         return ret;
     }
@@ -45,7 +93,7 @@ int t_stream_peek_char(tStream *stream, tChar *out_ch) {
 
     tByte bytes[4];
     for (int i = 0; i < length; i++) {
-        ret = t_peek_nth_byte(stream->bstream, i, &byte);
+        ret = t_stream_peek_nth_byte(stream, i, &byte);
         if (ret != 1) {
             return STREAM_INVALID_UTF8_OCTETS;
         }
@@ -69,7 +117,7 @@ int t_stream_read_char(tStream *stream, tChar *out_ch) {
 
     tByte b;
     for (int i = 0; i < ret; i++) {
-        t_read_byte(stream->bstream, &b);
+        t_stream_read_byte(stream, &b);
     }
 
     return ret;
@@ -78,14 +126,14 @@ int t_stream_read_char(tStream *stream, tChar *out_ch) {
 int t_stream_write_char(tStream *stream, tChar ch) {
     tByte bytes[4];
     int length = t_utf8_encode(ch, bytes);
-    int num_free = t_stream_count_free_bytes(stream->bstream);
+    int num_free = t_stream_count_free_bytes(stream);
 
     if (length > num_free - 1) {
         return STREAM_FULL;
     }
 
     for (int i = 0; i < length; i++) {
-        t_write_byte(stream->bstream, bytes[i]);
+        t_stream_write_byte(stream, bytes[i]);
     }
 
     return length;
@@ -95,18 +143,129 @@ int t_stream_unread_char(tStream *stream, tChar ch);
 
 
 #ifdef TANAKA_LISP_TEST
+
 #include <assert.h>
 #include <stdio.h>
 
+static void test_peek_1st_byte_from_empty_stream() {
+    tStream input = {NULL, 0, 0};
+    size_t nth = 0;
+    int expected_ret = STREAM_EMPTY;
+
+    tByte actual_byte;
+    int actual_ret = t_stream_peek_nth_byte(&input, nth, &actual_byte);
+
+    assert(actual_ret == expected_ret);
+}
+
+static void test_peek_2nd_byte_from_length1_stream() {
+    tByte input_buf[STREAM_BUFFER_SIZE] = {'a', 'b', 'c'};
+    tStream input = {input_buf, 1, 0};
+    size_t nth = 1;
+    int expected_ret = STREAM_EMPTY;
+
+    tByte actual_byte;
+    int actual_ret = t_stream_peek_nth_byte(&input, nth, &actual_byte);
+
+    assert(actual_ret == expected_ret);
+}
+
+static void verify_peek_nth_byte(tStream *input, size_t nth, int expected_ret, tByte expected_byte) {
+    tByte actual_byte;
+    int actual_ret = t_stream_peek_nth_byte(input, nth, &actual_byte);
+
+    assert(actual_ret == expected_ret);
+    assert(actual_byte == expected_byte);
+}
+
+static void test_peek_1st_byte() {
+    tByte input_buf[STREAM_BUFFER_SIZE] = {'a', 'b', 'c'};
+    tStream input = {input_buf, 1, 0};
+    size_t nth = 0;
+    int expected_ret = 1;
+    tByte expected_byte = 'a';
+    size_t expected_tail = 0;
+
+    verify_peek_nth_byte(&input, nth, expected_ret, expected_byte);
+    assert(input.tail == expected_tail);
+}
+
+static void test_peek_2nd_byte() {
+    tByte input_buf[STREAM_BUFFER_SIZE] = {'a', 'b', 'c'};
+    tStream input = {input_buf, 2, 0};
+    size_t nth = 1;
+    int expected_ret = 1;
+    tByte expected_byte = 'b';
+    size_t expected_tail = 0;
+
+    verify_peek_nth_byte(&input, nth, expected_ret, expected_byte);
+    assert(input.tail == expected_tail);
+}
+
+static void test_read_byte_from_empty_stream() {
+    tStream input = {NULL, 0, 0};
+    int expected_ret = STREAM_EMPTY;
+
+    tByte actual_byte;
+    int actual_ret = t_stream_read_byte(&input, &actual_byte);
+
+    assert(actual_ret == expected_ret);
+}
+
+static void verify_read_byte(tStream *input, int expected_ret, tByte expected_byte) {
+    tByte actual_byte;
+    int actual_ret = t_stream_read_byte(input, &actual_byte);
+
+    assert(actual_ret == expected_ret);
+    assert(actual_byte == expected_byte);
+}
+
+static void test_read_byte_one() {
+    tByte input_buf[STREAM_BUFFER_SIZE] = {'a', 0, 0};
+    tStream input = {input_buf, 1, 0};
+    int expected_ret = 1;
+    tByte expected_byte = 'a';
+    size_t expected_tail = 1;
+
+    verify_read_byte(&input, expected_ret, expected_byte);
+    assert(input.tail == expected_tail);
+}
+
+static void test_write_byte_to_empty_stream() {
+    tByte input_byte = 'a';
+    int expected_ret = 1;
+    size_t expected_head = 1;
+    tByte expected_byte = 'a';
+
+    tByte stream_buf[STREAM_BUFFER_SIZE] = {};
+    tStream stream = {stream_buf, 0, 0};
+
+    int actual_ret = t_stream_write_byte(&stream, input_byte);
+
+    assert(actual_ret == expected_ret);
+    assert(stream.head == expected_head);
+    assert(stream.array[stream.head - 1] == expected_byte);
+}
+
+static void test_write_byte_to_full_stream() {
+    tByte stream_buf[STREAM_BUFFER_SIZE] = {};
+    // full stream := its head points to the previous element of its tail
+    tStream stream = {stream_buf, 12, 13};
+    tByte input_byte = 'a';
+    int expected_ret = STREAM_FULL;
+
+    int actual_ret = t_stream_write_byte(&stream, input_byte);
+    assert(actual_ret == expected_ret);
+}
+
 static void verify_peek_char(tByte *input, size_t size, int eret, tChar ech) {
-    tBinaryStream *bstream = make_binary_stream();
+    tStream *stream = make_stream();
     for (int i = 0; i < size; i++) {
-        t_write_byte(bstream, input[i]);
+        t_stream_write_byte(stream, input[i]);
     }
-    tStream stream = {bstream};
 
     tChar actual_ch;
-    int actual_ret = t_stream_peek_char(&stream, &actual_ch);
+    int actual_ret = t_stream_peek_char(stream, &actual_ch);
 
     assert(actual_ret == eret);
     assert(actual_ch == ech);
@@ -154,31 +313,29 @@ static void test_peek_char_twice() {
     tChar expected_ch = 0x03bb;
 
     int len = sizeof(input) / sizeof(input[0]);
-    tBinaryStream *bstream = make_binary_stream();
+    tStream *stream = make_stream();
     for (int i = 0; i < len; i++) {
-        t_write_byte(bstream, input[i]);
+        t_stream_write_byte(stream, input[i]);
     }
-    tStream stream = {bstream};
 
     tChar actual_ch;
-    int actual_ret = t_stream_peek_char(&stream, &actual_ch);
+    int actual_ret = t_stream_peek_char(stream, &actual_ch);
     assert(actual_ret == expected_ret);
     assert(actual_ch == expected_ch);
 
-    actual_ret = t_stream_peek_char(&stream, &actual_ch);
+    actual_ret = t_stream_peek_char(stream, &actual_ch);
     assert(actual_ret == expected_ret);
     assert(actual_ch == expected_ch);
 }
 
 static void verify_read_char(tByte *input, size_t size, int eret, tChar ech) {
-    tBinaryStream *bstream = make_binary_stream();
+    tStream *stream = make_stream();
     for (int i = 0; i < size; i++) {
-        t_write_byte(bstream, input[i]);
+        t_stream_write_byte(stream, input[i]);
     }
-    tStream stream = {bstream};
 
     tChar actual_ch;
-    int actual_ret = t_stream_read_char(&stream, &actual_ch);
+    int actual_ret = t_stream_read_char(stream, &actual_ch);
 
     assert(actual_ret == eret);
     assert(actual_ch == ech);
@@ -201,18 +358,17 @@ static void test_read_char_twice() {
     tChar expected_ch2 = 0x1f973;
 
     int len = sizeof(input) / sizeof(input[0]);
-    tBinaryStream *bstream = make_binary_stream();
+    tStream *stream = make_stream();
     for (int i = 0; i < len; i++) {
-        t_write_byte(bstream, input[i]);
+        t_stream_write_byte(stream, input[i]);
     }
-    tStream stream = {bstream};
 
     tChar actual_ch;
-    int actual_ret = t_stream_read_char(&stream, &actual_ch);
+    int actual_ret = t_stream_read_char(stream, &actual_ch);
     assert(actual_ret == expected_ret1);
     assert(actual_ch == expected_ch1);
 
-    actual_ret = t_stream_read_char(&stream, &actual_ch);
+    actual_ret = t_stream_read_char(stream, &actual_ch);
     assert(actual_ret == expected_ret2);
     assert(actual_ch == expected_ch2);
 }
@@ -224,7 +380,7 @@ static void verify_write_char_patterns(tStream *stream, int num, tChar *input, i
         assert(actual_ret == erets[n]);
         for (int i = 0; i < actual_ret; i++) {
             tByte actual_byte;
-            t_read_byte(stream->bstream, &actual_byte);
+            t_stream_read_byte(stream, &actual_byte);
             assert(actual_byte == ebytes[n][i]);
         }
     }
@@ -236,10 +392,9 @@ static void test_write_char_one() {
     tByte ebytes1[] = {0xe3, 0x81, 0x82};
     tByte *expected_bytes[1] = {ebytes1};
 
-    tBinaryStream *bstream = make_binary_stream();
-    tStream stream = {bstream};
+    tStream *stream = make_stream();
 
-    verify_write_char_patterns(&stream, 1, input, expected_rets, expected_bytes);
+    verify_write_char_patterns(stream, 1, input, expected_rets, expected_bytes);
 }
 
 static void test_write_char_two() {
@@ -249,13 +404,23 @@ static void test_write_char_two() {
     tByte ebytes2[] = {0xf0, 0x9f, 0xa5, 0xb3};
     tByte *expected_bytes[2] = {ebytes1, ebytes2};
 
-    tBinaryStream *bstream = make_binary_stream();
-    tStream stream = {bstream};
+    tStream *stream = make_stream();
 
-    verify_write_char_patterns(&stream, 1, input, expected_rets, expected_bytes);
+    verify_write_char_patterns(stream, 1, input, expected_rets, expected_bytes);
 }
 
 void test_stream_all() {
+    test_peek_1st_byte_from_empty_stream();
+    test_peek_2nd_byte_from_length1_stream();
+    test_peek_1st_byte();
+    test_peek_2nd_byte();
+
+    test_read_byte_from_empty_stream();
+    test_read_byte_one();
+
+    test_write_byte_to_empty_stream();
+    test_write_byte_to_full_stream();
+
     test_peek_char_one_byte();
     test_peek_char_two_bytes();
     test_peek_char_three_bytes();
@@ -270,4 +435,5 @@ void test_stream_all() {
 
     printf("test: stream -> ok\n");
 }
+
 #endif

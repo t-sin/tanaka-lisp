@@ -1,6 +1,6 @@
 PROGRAM = tanaka-lisp
 PROGRAM_OBJECT = tanaka-lisp.o
-OBJECTS = utf8.o binary_stream.o stream.o string_repr.o
+OBJECTS = utf8.o stream.o string_repr.o
 
 TEST_PROGRAM = tanaka-lisp-test
 TEST_OBJECT = tanaka-lisp-test.o

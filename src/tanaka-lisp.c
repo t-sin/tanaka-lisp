@@ -4,7 +4,6 @@
 
 #include "tanaka_type.h"
 
-#include "binary_stream.h"
 #include "stream.h"
 #include "string_repr.h"
 
@@ -24,8 +23,8 @@ int main(int argc, char **argv) {
     char linebuf[LINE_SIZE];
     memset(linebuf, 0, LINE_SIZE);
 
-    tStream *stream_stdin = make_stream(make_binary_stream());
-    tStream *stream_stdout = make_stream(make_binary_stream());
+    tStream *stream_stdin = make_stream();
+    tStream *stream_stdout = make_stream();
     int more_input_needed = 0;
 
     while (1) {
