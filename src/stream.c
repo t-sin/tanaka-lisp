@@ -6,12 +6,6 @@
 
 #define STREAM_BUFFER_SIZE 1024
 
-typedef struct tStream_t {
-    tByte *array;
-    size_t head;
-    size_t tail;
-} tStream;
-
 tStream *make_stream() {
     tStream *stream = (tStream *)malloc(sizeof(tStream));
 

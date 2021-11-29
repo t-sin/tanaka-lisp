@@ -3,9 +3,6 @@
 
 #include "tanaka-lisp.h"
 
-// The stream object. It treats binary data but can be read/write as characters.
-typedef struct tStream_t tStream;
-
 #define STREAM_EMPTY -1
 #define STREAM_FULL -2
 #define STREAM_INVALID_UTF8_OCTETS -3
