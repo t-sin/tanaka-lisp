@@ -13,12 +13,12 @@ typedef uint32_t tChar;
 
 typedef enum {
     // primitive types
-    T_NIL = 0x0,
-    T_BOOL = 0x1,
-    T_CHAR = 0x2,
-    T_INTEGER = 0x3,
-    T_FLOAT = 0x4,
-    T_STREAM = 0x5
+    T_NIL = 0x00,
+    T_BOOL = 0x01,
+    T_CHAR = 0x02,
+    T_INTEGER = 0x03,
+    T_FLOAT = 0x04,
+    T_STREAM = 0x05
 } tLispType;
 
 // The stream object. It treats binary data but can be read/write as characters.
@@ -29,7 +29,7 @@ typedef struct tStream_t {
 } tStream;
 
 typedef struct tLispObject_t {
-    tLispType type;
+    tByte type;
     union {
         uint64_t primitive;
         tStream *stream;
