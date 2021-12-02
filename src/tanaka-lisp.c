@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "tanaka-lisp.h"
+#include "garbage_collector.h"
 
 #include "stream.h"
 #include "string_repr.h"
@@ -23,8 +24,10 @@ int main(int argc, char **argv) {
     char linebuf[LINE_SIZE];
     memset(linebuf, 0, LINE_SIZE);
 
-    tStream *stream_stdin = make_stream();
-    tStream *stream_stdout = make_stream();
+    t_gc_setup();
+
+    tStream *stream_stdin = &t_gc_allocate_stream_obj()->o.stream;
+    tStream *stream_stdout = &t_gc_allocate_stream_obj()->o.stream;
     int more_input_needed = 0;
 
     while (1) {
@@ -68,6 +71,8 @@ int main(int argc, char **argv) {
             break;
         }
     }
+
+    t_gc_terminate();
 
     return 0;
 }

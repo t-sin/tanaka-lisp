@@ -1,20 +1,9 @@
 #include <stdlib.h>
 
 #include "tanaka-lisp.h"
+#include "garbage_collector.h"
 #include "utf8.h"
 #include "stream.h"
-
-#define STREAM_BUFFER_SIZE 1024
-
-tStream *make_stream() {
-    tStream *stream = (tStream *)malloc(sizeof(tStream));
-
-    stream->array = (tByte *)malloc(sizeof(tByte) * STREAM_BUFFER_SIZE);
-    stream->head = 0;
-    stream->tail = 0;
-
-    return stream;
-}
 
 void t_stream_clear(tStream *stream) {
     stream->tail = stream->head;
@@ -142,7 +131,7 @@ int t_stream_unread_char(tStream *stream, tChar ch);
 #include <stdio.h>
 
 static void test_peek_1st_byte_from_empty_stream() {
-    tStream input = {NULL, 0, 0};
+    tStream input = {0, 0};
     size_t nth = 0;
     int expected_ret = STREAM_EMPTY;
 
@@ -154,7 +143,8 @@ static void test_peek_1st_byte_from_empty_stream() {
 
 static void test_peek_2nd_byte_from_length1_stream() {
     tByte input_buf[STREAM_BUFFER_SIZE] = {'a', 'b', 'c'};
-    tStream input = {input_buf, 1, 0};
+    tStream input = {1, 0};
+    input.array = input_buf;
     size_t nth = 1;
     int expected_ret = STREAM_EMPTY;
 

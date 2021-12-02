@@ -12,28 +12,54 @@ typedef double   tFloat;
 typedef uint32_t tChar;
 
 typedef enum {
-    // primitive types
-    T_NIL = 0x00,
-    T_BOOL = 0x01,
-    T_CHAR = 0x02,
-    T_INTEGER = 0x03,
-    T_FLOAT = 0x04,
-    T_STREAM = 0x05
+    // primitive lisp types
+    TLISP_NULL = 0x00,
+    TLISP_NIL = 0x01,
+    TLISP_BOOL = 0x02,
+    TLISP_CHAR = 0x03,
+    TLISP_INTEGER = 0x04,
+    TLISP_FLOAT = 0x05,
+    // lisp objects
+    TLISP_STREAM = 0x06,
+    // other types
+    T_STREAM = 0x0a,
 } tLispType;
+
+#define STREAM_BUFFER_SIZE 1024
+
+typedef struct tObject_t tObject;
 
 // The stream object. It treats binary data but can be read/write as characters.
 typedef struct tStream_t {
-    tByte *array;
     size_t head;
     size_t tail;
+    tByte array[];
 } tStream;
 
 typedef struct tLispObject_t {
-    tByte type;
     union {
         uint64_t primitive;
-        tStream *stream;
+        tObject *stream;
     } o;
 } tLispObject;
+
+typedef struct tObject_t {
+    tByte type;
+    size_t size;
+
+    union {
+        struct tObject_t *next;
+        tLispObject lisp_obj;
+        tStream stream;
+    } o;
+} tObject;
+
+#define TLISP_TYPE(obj) (obj->type & 0x7f)
+#define TLISP_MARKED(obj) (!!(obj->type & 0x80))
+#define TLISP_MARK(obj) (obj->type = obj->type | 0x80)
+#define TLISP_UNMARK(obj) (obj->type = obj->type & 0x7f)
+
+#define TLISP_OBJ(obj) (obj->o.lisp_obj)
+#define T_STREAM(obj) (obj->o.stream)
 
 #endif
