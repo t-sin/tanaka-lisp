@@ -12,7 +12,7 @@
     - [x] integers
     - [ ] floating point numbers
     - [ ] dot pairs
-        - [ ] garbage collection
+        - [x] garbage collection
     - [ ] proper lists
     - [ ] arrays
     - [ ] hash tables
