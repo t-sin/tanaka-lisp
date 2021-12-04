@@ -16,6 +16,8 @@ int tLisp_eval(tLispObject *obj, tLispObject **out_obj) {
     return 0;
 }
 
+tLispRuntime runtime = {NULL, NULL, NULL};
+
 #define LINE_SIZE 512
 
 int main(int argc, char **argv) {

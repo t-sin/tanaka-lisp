@@ -36,16 +36,50 @@ void t_gc_terminate() {
     heap_free = NULL;
 }
 
-void gc_copy(void *root) {
+int is_pointer_to(void *ptr, void *heap) {
+    return (heap <= ptr && ptr < heap + AREA_SIZE);
+}
+
+size_t calculate_size(void *obj) {
+    switch (TLISP_TYPE(obj)) {
+    case TLISP_NULL:
+    case TLISP_NIL:
+    case TLISP_BOOL:
+    case TLISP_CHAR:
+    case TLISP_INTEGER:
+    case TLISP_FLOAT:
+    case TLISP_STREAM:
+        return sizeof(tLispObject);
+
+    case T_STREAM:
+        return sizeof(tStream) + sizeof(tByte) * STREAM_BUFFER_SIZE;
+    }
+}
+
+void *gc_copy(void *obj) {
+    //printf("[gc] start copying obj = %p\n", obj);
+
+    if (!is_pointer_to(((tObjectHeader *)obj)->forwarding, heap_to)) {
+        size_t size = calculate_size(obj);
+
+        memcpy(heap_free, obj, size);
+        ((tObjectHeader *)obj)->forwarding = heap_free;
+
+        heap_free += size;
+    }
+
+    return ((tObjectHeader *)obj)->forwarding;
 }
 
 void gc_collect() {
+    //printf("[gc] start collect garbages...\n");
+
     void *scan = heap_free = heap_to;
 
-    // copy roots
-    gc_copy(runtime.toplevel_obj);
-    gc_copy(runtime.stdin);
-    gc_copy(runtime.stdout);
+    if (runtime.toplevel_obj != NULL)
+        runtime.toplevel_obj = gc_copy(runtime.toplevel_obj);
+    runtime.stdin = gc_copy(runtime.stdin);
+    runtime.stdout = gc_copy(runtime.stdout);
 
     while (scan != heap_free) {
         switch (TLISP_TYPE(scan)) {
@@ -60,13 +94,16 @@ void gc_collect() {
         case TLISP_STREAM: {
                 tLispObject *stream = (tLispObject *)scan;
                 stream->o.stream = gc_copy(stream->o.stream);
-            };
-            break;
-
-        case T_STREAM: {
-                // todo
                 break;
             }
+
+        case T_STREAM: {
+                tStream *stream_obj = (tStream *)scan;
+                break;
+            }
+        }
+
+        scan += calculate_size(scan);
     }
 
     void *tmp = heap_from;
@@ -76,15 +113,16 @@ void gc_collect() {
 
 void *gc_allocate(size_t size) {
     if (heap_free + size > heap_from + AREA_SIZE) {
+        //printf("[gc] HEAP IS FULL!!!\n");
         gc_collect();
 
         if (heap_free + size > heap_from + AREA_SIZE) {
-            printf("[gc] HEAP IS FULL!!!\n");
+            //printf("[gc] HEAP IS FULL AFTER GC!!!\n");
             return NULL;
         }
     }
 
-    printf("[gc] %ld bytes allocated.\n", size);
+    //printf("[gc] %ld bytes allocated.\n", size);
     void *obj = heap_free;
     heap_free += size;
     return obj;

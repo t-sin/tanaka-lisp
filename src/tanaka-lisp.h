@@ -52,7 +52,7 @@ typedef struct tLispObject_t {
     } o;
 } tLispObject;
 
-#define TLISP_TYPE(obj) (((tObjectHeader *)obj)->header.type)
+#define TLISP_TYPE(obj) (((tObjectHeader *)obj)->type)
 
 typedef struct tLispRuntime_t {
     tLispObject *toplevel_obj;
@@ -61,6 +61,6 @@ typedef struct tLispRuntime_t {
     tStream *stdout;
 } tLispRuntime;
 
-static tLispRuntime runtime;
+extern tLispRuntime runtime;
 
 #endif
