@@ -10,7 +10,9 @@
 
 char *tlisp_version = "0.0.0";
 
-int tLisp_eval(tLispObject *obj, tLispObject *out_obj) {
+int tLisp_eval(tLispObject *obj, tLispObject **out_obj) {
+    *out_obj = obj;
+
     return 0;
 }
 
@@ -24,8 +26,8 @@ int main(int argc, char **argv) {
 
     t_gc_setup();
 
-    tStream *stream_stdin = t_gc_allocate_stream_obj();
-    tStream *stream_stdout = t_gc_allocate_stream_obj();
+    runtime.stdin = t_gc_allocate_stream_obj();
+    runtime.stdout = t_gc_allocate_stream_obj();
     int more_input_needed = 0;
 
     while (1) {
@@ -37,13 +39,12 @@ int main(int argc, char **argv) {
         }
 
         if (fgets(linebuf, LINE_SIZE, stdin) > 0) {
-            t_stream_clear(stream_stdin);
+            t_stream_clear(runtime.stdin);
             for (int i = 0; linebuf[i] != '\n'; i++) {
-                t_stream_write_byte(stream_stdin, linebuf[i]);
+                t_stream_write_byte(runtime.stdin, linebuf[i]);
             }
 
-            tLispObject *obj;
-            int ret = tLisp_read(stream_stdin, &obj);
+            int ret = tLisp_read(runtime.stdin, &runtime.toplevel_obj);
 
             if (ret == READ_MORE) {
                 more_input_needed = 1;
@@ -52,13 +53,13 @@ int main(int argc, char **argv) {
                 continue;
             }
 
-            //tLisp_eval(obj, obj);
+            tLisp_eval(runtime.toplevel_obj, &runtime.toplevel_obj);
 
-            tLisp_print(stream_stdout, obj);
+            tLisp_print(runtime.stdout, runtime.toplevel_obj);
 
             printf("=> ");
             tByte b;
-            while (t_stream_read_byte(stream_stdout, &b) > 0) {
+            while (t_stream_read_byte(runtime.stdout, &b) > 0) {
                 fputc(b, stdout);
             }
             puts("");

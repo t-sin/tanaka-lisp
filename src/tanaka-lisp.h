@@ -57,4 +57,13 @@ typedef struct tLispObject_t {
 #define TLISP_MARK(obj) (obj->type = obj->type | 0x80)
 #define TLISP_UNMARK(obj) (obj->type = obj->type & 0x7f)
 
+typedef struct tLispRuntime_t {
+    tLispObject *toplevel_obj;
+
+    tStream *stdin;
+    tStream *stdout;
+} tLispRuntime;
+
+static tLispRuntime runtime;
+
 #endif
