@@ -20,7 +20,8 @@ typedef enum {
     TLISP_INTEGER = 0x04,
     TLISP_FLOAT = 0x05,
     // lisp objects
-    TLISP_STREAM = 0x06,
+    TLISP_CONS = 0x06,
+    TLISP_STREAM = 0x07,
     // other types
     T_STREAM = 0x0a,
 } tLispType;
@@ -29,7 +30,6 @@ typedef enum {
 
 typedef struct tObjectHeader_t {
     tByte type;
-    void *forwarding;
 } tObjectHeader;
 
 #define tHeader tObjectHeader header
@@ -38,8 +38,13 @@ typedef struct tObjectHeader_t {
 typedef struct tStream_t {
     tHeader;
 
-    size_t head;
-    size_t tail;
+    union {
+        void *forwarding;
+        struct {
+            size_t head;
+            size_t tail;
+        } tap;
+    } o;
     tByte array[];
 } tStream;
 
@@ -47,6 +52,7 @@ typedef struct tLispObject_t {
     tHeader;
 
     union {
+        void *forwarding;
         uint64_t primitive;
         tStream *stream;
     } o;

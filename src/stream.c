@@ -6,16 +6,16 @@
 #include "stream.h"
 
 void t_stream_clear(tStream *stream) {
-    stream->tail = stream->head;
+    stream->o.tap.tail = stream->o.tap.head;
 }
 
 size_t t_stream_count_bytes(tStream *stream) {
-    if (stream->head == stream->tail) {
+    if (stream->o.tap.head == stream->o.tap.tail) {
         return 0;
-    } else if (stream->head > stream->tail) {
-        return stream->head - stream->tail;
+    } else if (stream->o.tap.head > stream->o.tap.tail) {
+        return stream->o.tap.head - stream->o.tap.tail;
     } else {
-        return stream->head + (STREAM_BUFFER_SIZE - stream->tail);
+        return stream->o.tap.head + (STREAM_BUFFER_SIZE - stream->o.tap.tail);
     }
 }
 
@@ -28,7 +28,7 @@ int t_stream_peek_nth_byte(tStream *stream, size_t n, tByte *out_byte) {
         return STREAM_EMPTY;
     }
 
-    *out_byte = stream->array[stream->tail + n];
+    *out_byte = stream->array[stream->o.tap.tail + n];
     return 1;
 }
 
@@ -41,8 +41,8 @@ int t_stream_read_byte(tStream *stream, tByte *out_byte) {
         return STREAM_EMPTY;
     }
 
-    *out_byte = stream->array[stream->tail];
-    proceed(&stream->tail);
+    *out_byte = stream->array[stream->o.tap.tail];
+    proceed(&stream->o.tap.tail);
 
     return 1;
 }
@@ -56,8 +56,8 @@ int t_stream_write_byte(tStream *stream, tByte byte) {
         return STREAM_FULL;
     }
 
-    stream->array[stream->head] = byte;
-    proceed(&stream->head);
+    stream->array[stream->o.tap.head] = byte;
+    proceed(&stream->o.tap.head);
 
     return 1;
 }
@@ -129,27 +129,28 @@ int t_stream_unread_char(tStream *stream, tChar ch);
 
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 
 static void test_peek_1st_byte_from_empty_stream() {
-    tStream input = {0, 0};
+    runtime.stdin = t_gc_allocate_stream_obj();
     size_t nth = 0;
     int expected_ret = STREAM_EMPTY;
 
     tByte actual_byte;
-    int actual_ret = t_stream_peek_nth_byte(&input, nth, &actual_byte);
+    int actual_ret = t_stream_peek_nth_byte(runtime.stdin, nth, &actual_byte);
 
     assert(actual_ret == expected_ret);
 }
 
 static void test_peek_2nd_byte_from_length1_stream() {
     tByte input_buf[STREAM_BUFFER_SIZE] = {'a', 'b', 'c'};
-    tStream input = {1, 0};
-    input.array = input_buf;
+    runtime.stdin = t_gc_allocate_stream_obj();
+    memcpy(runtime.stdin->array, input_buf, sizeof(tByte) * STREAM_BUFFER_SIZE);
     size_t nth = 1;
     int expected_ret = STREAM_EMPTY;
 
     tByte actual_byte;
-    int actual_ret = t_stream_peek_nth_byte(&input, nth, &actual_byte);
+    int actual_ret = t_stream_peek_nth_byte(runtime.stdin, nth, &actual_byte);
 
     assert(actual_ret == expected_ret);
 }
@@ -164,34 +165,42 @@ static void verify_peek_nth_byte(tStream *input, size_t nth, int expected_ret, t
 
 static void test_peek_1st_byte() {
     tByte input_buf[STREAM_BUFFER_SIZE] = {'a', 'b', 'c'};
-    tStream input = {input_buf, 1, 0};
+    runtime.stdin = t_gc_allocate_stream_obj();
+    runtime.stdin->o.tap.head = 1;
+    runtime.stdin->o.tap.tail = 0;
+    memcpy(runtime.stdin->array, input_buf, sizeof(tByte) * STREAM_BUFFER_SIZE);
     size_t nth = 0;
     int expected_ret = 1;
     tByte expected_byte = 'a';
     size_t expected_tail = 0;
 
-    verify_peek_nth_byte(&input, nth, expected_ret, expected_byte);
-    assert(input.tail == expected_tail);
+    verify_peek_nth_byte(runtime.stdin, nth, expected_ret, expected_byte);
+    assert(runtime.stdin->o.tap.tail == expected_tail);
 }
 
 static void test_peek_2nd_byte() {
     tByte input_buf[STREAM_BUFFER_SIZE] = {'a', 'b', 'c'};
-    tStream input = {input_buf, 2, 0};
+    runtime.stdin = t_gc_allocate_stream_obj();
+    runtime.stdin->o.tap.head = 2;
+    runtime.stdin->o.tap.tail = 0;
+    memcpy(runtime.stdin->array, input_buf, sizeof(tByte) * STREAM_BUFFER_SIZE);
     size_t nth = 1;
     int expected_ret = 1;
     tByte expected_byte = 'b';
     size_t expected_tail = 0;
 
-    verify_peek_nth_byte(&input, nth, expected_ret, expected_byte);
-    assert(input.tail == expected_tail);
+    verify_peek_nth_byte(runtime.stdin, nth, expected_ret, expected_byte);
+    assert(runtime.stdin->o.tap.tail == expected_tail);
 }
 
 static void test_read_byte_from_empty_stream() {
-    tStream input = {NULL, 0, 0};
+    runtime.stdin = t_gc_allocate_stream_obj();
+    runtime.stdin->o.tap.head = 0;
+    runtime.stdin->o.tap.tail = 0;
     int expected_ret = STREAM_EMPTY;
 
     tByte actual_byte;
-    int actual_ret = t_stream_read_byte(&input, &actual_byte);
+    int actual_ret = t_stream_read_byte(runtime.stdin, &actual_byte);
 
     assert(actual_ret == expected_ret);
 }
@@ -206,13 +215,16 @@ static void verify_read_byte(tStream *input, int expected_ret, tByte expected_by
 
 static void test_read_byte_one() {
     tByte input_buf[STREAM_BUFFER_SIZE] = {'a', 0, 0};
-    tStream input = {input_buf, 1, 0};
+    runtime.stdin = t_gc_allocate_stream_obj();
+    runtime.stdin->o.tap.head = 1;
+    runtime.stdin->o.tap.tail = 0;
+    memcpy(runtime.stdin->array, input_buf, sizeof(tByte) * STREAM_BUFFER_SIZE);
     int expected_ret = 1;
     tByte expected_byte = 'a';
     size_t expected_tail = 1;
 
-    verify_read_byte(&input, expected_ret, expected_byte);
-    assert(input.tail == expected_tail);
+    verify_read_byte(runtime.stdin, expected_ret, expected_byte);
+    assert(runtime.stdin->o.tap.tail == expected_tail);
 }
 
 static void test_write_byte_to_empty_stream() {
@@ -222,28 +234,34 @@ static void test_write_byte_to_empty_stream() {
     tByte expected_byte = 'a';
 
     tByte stream_buf[STREAM_BUFFER_SIZE] = {};
-    tStream stream = {stream_buf, 0, 0};
+    tStream *stream = t_gc_allocate_stream_obj();
+    stream->o.tap.head = 0;
+    stream->o.tap.tail = 0;
+    memcpy(stream->array, stream_buf, sizeof(tByte) * STREAM_BUFFER_SIZE);
 
-    int actual_ret = t_stream_write_byte(&stream, input_byte);
+    int actual_ret = t_stream_write_byte(stream, input_byte);
 
     assert(actual_ret == expected_ret);
-    assert(stream.head == expected_head);
-    assert(stream.array[stream.head - 1] == expected_byte);
+    assert(stream->o.tap.head == expected_head);
+    assert(stream->array[stream->o.tap.head - 1] == expected_byte);
 }
 
 static void test_write_byte_to_full_stream() {
     tByte stream_buf[STREAM_BUFFER_SIZE] = {};
     // full stream := its head points to the previous element of its tail
-    tStream stream = {stream_buf, 12, 13};
+    tStream *stream = t_gc_allocate_stream_obj();
+    stream->o.tap.head = 12;
+    stream->o.tap.tail = 13;
+    memcpy(stream->array, stream_buf, sizeof(tByte) * STREAM_BUFFER_SIZE);
     tByte input_byte = 'a';
     int expected_ret = STREAM_FULL;
 
-    int actual_ret = t_stream_write_byte(&stream, input_byte);
+    int actual_ret = t_stream_write_byte(stream, input_byte);
     assert(actual_ret == expected_ret);
 }
 
 static void verify_peek_char(tByte *input, size_t size, int eret, tChar ech) {
-    tStream *stream = make_stream();
+    tStream *stream = t_gc_allocate_stream_obj();
     for (int i = 0; i < size; i++) {
         t_stream_write_byte(stream, input[i]);
     }
@@ -297,7 +315,7 @@ static void test_peek_char_twice() {
     tChar expected_ch = 0x03bb;
 
     int len = sizeof(input) / sizeof(input[0]);
-    tStream *stream = make_stream();
+    tStream *stream = t_gc_allocate_stream_obj();
     for (int i = 0; i < len; i++) {
         t_stream_write_byte(stream, input[i]);
     }
@@ -313,7 +331,7 @@ static void test_peek_char_twice() {
 }
 
 static void verify_read_char(tByte *input, size_t size, int eret, tChar ech) {
-    tStream *stream = make_stream();
+    tStream *stream = t_gc_allocate_stream_obj();
     for (int i = 0; i < size; i++) {
         t_stream_write_byte(stream, input[i]);
     }
@@ -342,7 +360,7 @@ static void test_read_char_twice() {
     tChar expected_ch2 = 0x1f973;
 
     int len = sizeof(input) / sizeof(input[0]);
-    tStream *stream = make_stream();
+    tStream *stream = t_gc_allocate_stream_obj();
     for (int i = 0; i < len; i++) {
         t_stream_write_byte(stream, input[i]);
     }
@@ -376,7 +394,7 @@ static void test_write_char_one() {
     tByte ebytes1[] = {0xe3, 0x81, 0x82};
     tByte *expected_bytes[1] = {ebytes1};
 
-    tStream *stream = make_stream();
+    tStream *stream = t_gc_allocate_stream_obj();
 
     verify_write_char_patterns(stream, 1, input, expected_rets, expected_bytes);
 }
@@ -388,12 +406,14 @@ static void test_write_char_two() {
     tByte ebytes2[] = {0xf0, 0x9f, 0xa5, 0xb3};
     tByte *expected_bytes[2] = {ebytes1, ebytes2};
 
-    tStream *stream = make_stream();
+    tStream *stream = t_gc_allocate_stream_obj();
 
     verify_write_char_patterns(stream, 1, input, expected_rets, expected_bytes);
 }
 
 void test_stream_all() {
+    t_gc_setup();
+
     test_peek_1st_byte_from_empty_stream();
     test_peek_2nd_byte_from_length1_stream();
     test_peek_1st_byte();
@@ -417,6 +437,7 @@ void test_stream_all() {
     test_write_char_one();
     test_write_char_two();
 
+    t_gc_terminate();
     printf("test: stream -> ok\n");
 }
 

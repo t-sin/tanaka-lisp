@@ -40,8 +40,8 @@ int is_pointer_to(void *ptr, void *heap) {
     return (heap <= ptr && ptr < heap + AREA_SIZE);
 }
 
-size_t calculate_size(void *obj) {
-    switch (TLISP_TYPE(obj)) {
+size_t calculate_size(int type) {
+    switch (type) {
     case TLISP_NULL:
     case TLISP_NIL:
     case TLISP_BOOL:
@@ -56,19 +56,62 @@ size_t calculate_size(void *obj) {
     }
 }
 
+void *get_forwarding_ptr(void *obj) {
+    switch (TLISP_TYPE(obj)) {
+    case TLISP_NULL:
+    case TLISP_NIL:
+    case TLISP_BOOL:
+    case TLISP_CHAR:
+    case TLISP_INTEGER:
+    case TLISP_FLOAT:
+    case TLISP_STREAM: {
+            tLispObject *lisp_obj = (tLispObject *)obj;
+            return lisp_obj->o.forwarding;
+        }
+
+    case T_STREAM: {
+            tStream *stream = (tStream *)obj;
+            return stream->o.forwarding;
+        }
+    }
+}
+
+void set_forwarding_ptr(void *obj, void *ptr) {
+    switch (TLISP_TYPE(obj)) {
+    case TLISP_NULL:
+    case TLISP_NIL:
+    case TLISP_BOOL:
+    case TLISP_CHAR:
+    case TLISP_INTEGER:
+    case TLISP_FLOAT:
+    case TLISP_STREAM: {
+            tLispObject *lisp_obj = (tLispObject *)obj;
+            lisp_obj->o.forwarding = ptr;
+            break;
+        }
+
+    case T_STREAM: {
+            tStream *stream = (tStream *)obj;
+            stream->o.forwarding = ptr;
+            break;
+        }
+    }
+}
+
 void *gc_copy(void *obj) {
     //printf("[gc] start copying obj = %p\n", obj);
+    assert(obj != NULL);
 
-    if (!is_pointer_to(((tObjectHeader *)obj)->forwarding, heap_to)) {
-        size_t size = calculate_size(obj);
+    if (!is_pointer_to(get_forwarding_ptr(obj), heap_to)) {
+        size_t size = calculate_size(TLISP_TYPE(obj));
 
         memcpy(heap_free, obj, size);
-        ((tObjectHeader *)obj)->forwarding = heap_free;
+        set_forwarding_ptr(obj, heap_free);
 
         heap_free += size;
     }
 
-    return ((tObjectHeader *)obj)->forwarding;
+    return get_forwarding_ptr(obj);
 }
 
 void gc_collect() {
@@ -76,10 +119,15 @@ void gc_collect() {
 
     void *scan = heap_free = heap_to;
 
-    if (runtime.toplevel_obj != NULL)
-        runtime.toplevel_obj = gc_copy(runtime.toplevel_obj);
-    runtime.stdin = gc_copy(runtime.stdin);
-    runtime.stdout = gc_copy(runtime.stdout);
+    void **roots[] = {
+        (void **)&runtime.toplevel_obj,
+        (void **)&runtime.stdin,
+        (void **)&runtime.stdin,
+    };
+    for (int i = 0; i < 3; i++) {
+        if (*roots[i] != NULL)
+            *roots[i] = gc_copy(*roots[i]);
+    }
 
     while (scan != heap_free) {
         switch (TLISP_TYPE(scan)) {
@@ -103,7 +151,7 @@ void gc_collect() {
             }
         }
 
-        scan += calculate_size(scan);
+        scan += calculate_size(TLISP_TYPE(scan));
     }
 
     void *tmp = heap_from;
@@ -131,7 +179,7 @@ void *gc_allocate(size_t size) {
 tLispObject *t_gc_allocate_nil();
 
 tLispObject *t_gc_allocate_bool(int v) {
-    size_t size = sizeof(tLispObject);
+    size_t size = calculate_size(TLISP_BOOL);
     tLispObject *obj = (tLispObject *)gc_allocate(size);
 
     obj->header.type = TLISP_BOOL;
@@ -142,7 +190,7 @@ tLispObject *t_gc_allocate_bool(int v) {
 tLispObject *t_gc_allocate_char(tChar v);
 
 tLispObject *t_gc_allocate_integer(tInt v) {
-    size_t size = sizeof(tLispObject);
+    size_t size = calculate_size(TLISP_INTEGER);
     tLispObject *obj = (tLispObject *)gc_allocate(size);
 
     obj->header.type = TLISP_INTEGER;
@@ -153,19 +201,19 @@ tLispObject *t_gc_allocate_integer(tInt v) {
 tLispObject *t_gc_allocate_float(tFloat v);
 
 tStream *t_gc_allocate_stream_obj() {
-    size_t size = sizeof(tStream) + sizeof(tByte) * STREAM_BUFFER_SIZE;
+    size_t size = calculate_size(T_STREAM);
     tStream *stream_obj = (tStream *)gc_allocate(size);
     memset(stream_obj, 0, size);
 
     stream_obj->header.type = T_STREAM;
-    stream_obj->head = 0;
-    stream_obj->tail = 0;
+    stream_obj->o.tap.head = 0;
+    stream_obj->o.tap.tail = 0;
 
     return stream_obj;
 }
 
 tLispObject *t_gc_allocate_stream() {
-    size_t size = sizeof(tLispObject);
+    size_t size = calculate_size(TLISP_STREAM);
     tLispObject *stream = (tLispObject *)gc_allocate(size);
 
     stream->header.type = TLISP_STREAM;
