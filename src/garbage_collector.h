@@ -12,8 +12,8 @@ tLispObject *t_gc_allocate_char(tChar v);
 tLispObject *t_gc_allocate_integer(tInt v);
 tLispObject *t_gc_allocate_float(tFloat v);
 
-tObject *t_gc_allocate_stream_obj();
-tObject *t_gc_allocate_stream();
+tStream *t_gc_allocate_stream_obj();
+tLispObject *t_gc_allocate_stream();
 
 
 #ifdef TANAKA_LISP_TEST

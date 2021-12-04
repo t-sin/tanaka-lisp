@@ -27,39 +27,34 @@ typedef enum {
 
 #define STREAM_BUFFER_SIZE 1024
 
-typedef struct tObject_t tObject;
+typedef struct tObjectHeader_t {
+    tByte type;
+    void *forwarding;
+} tObjectHeader;
+
+#define tHeader tObjectHeader header
 
 // The stream object. It treats binary data but can be read/write as characters.
 typedef struct tStream_t {
+    tHeader;
+
     size_t head;
     size_t tail;
     tByte array[];
 } tStream;
 
 typedef struct tLispObject_t {
+    tHeader;
+
     union {
         uint64_t primitive;
-        tObject *stream;
+        tStream *stream;
     } o;
 } tLispObject;
 
-typedef struct tObject_t {
-    tByte type;
-    size_t size;
-
-    union {
-        struct tObject_t *next;
-        tLispObject lisp_obj;
-        tStream stream;
-    } o;
-} tObject;
-
-#define TLISP_TYPE(obj) (obj->type & 0x7f)
+#define TLISP_TYPE(obj) (obj->header.type & 0x7f)
 #define TLISP_MARKED(obj) (!!(obj->type & 0x80))
 #define TLISP_MARK(obj) (obj->type = obj->type | 0x80)
 #define TLISP_UNMARK(obj) (obj->type = obj->type & 0x7f)
-
-#define TLISP_OBJ(obj) (obj->o.lisp_obj)
-#define T_STREAM(obj) (obj->o.stream)
 
 #endif

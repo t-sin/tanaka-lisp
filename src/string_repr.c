@@ -1,12 +1,14 @@
+#include <assert.h>
 #include <ctype.h>
 #include <stddef.h>
 
 #include "tanaka-lisp.h"
+#include "garbage_collector.h"
 
 #include "stream.h"
 #include "string_repr.h"
 
-static int read_sharp(tStream *in, tLispObject *out_obj) {
+static int read_sharp(tStream *in, tLispObject **out_obj) {
     int num = 0;
     tChar ch;
 
@@ -18,13 +20,11 @@ static int read_sharp(tStream *in, tLispObject *out_obj) {
 
     switch (ch) {
     case 'f':
-        out_obj->type = TLISP_BOOL;
-        out_obj->o.primitive = 0;
+        *out_obj = t_gc_allocate_bool(0);
         break;
 
     case 't':
-        out_obj->type = TLISP_BOOL;
-        out_obj->o.primitive = 1;
+        *out_obj = t_gc_allocate_bool(1);
         break;
 
     default:
@@ -34,7 +34,7 @@ static int read_sharp(tStream *in, tLispObject *out_obj) {
     return num;
 }
 
-static int read_integer(tStream *in, tLispObject *out_obj) {
+static int read_integer(tStream *in, tLispObject **out_obj) {
     int num = 0;
     tChar ch;
 
@@ -46,9 +46,7 @@ static int read_integer(tStream *in, tLispObject *out_obj) {
             return READ_FAILED;
 
         } else if (ret < 0) {
-            out_obj->type = TLISP_INTEGER;
-            out_obj->o.primitive = n;
-
+            *out_obj = t_gc_allocate_integer(n);
             return num;
         }
 
@@ -59,7 +57,7 @@ static int read_integer(tStream *in, tLispObject *out_obj) {
     }
 }
 
-int tLisp_read(tStream *in, tLispObject *out_obj) {
+int tLisp_read(tStream *in, tLispObject **out_obj) {
     size_t num = 0;
     tChar ch;
     int ret;
@@ -96,7 +94,7 @@ int tLisp_read(tStream *in, tLispObject *out_obj) {
             }
 
             num += ret;
-            out_obj->o.primitive = -out_obj->o.primitive;
+            (*out_obj)->o.primitive = -(*out_obj)->o.primitive;
 
         } else {
             return num;
@@ -134,11 +132,13 @@ static void print_integer(tStream *out, tLispObject *obj) {
     }
 }
 
-void tLisp_print(tStream *out, tObject *obj) {
-    switch (obj->type) {
+void tLisp_print(tStream *out, tLispObject *obj) {
+    assert(obj != NULL);
+
+    switch (TLISP_TYPE(obj)) {
     case TLISP_BOOL:
         t_stream_write_char(out, '#');
-        t_stream_write_char(out, obj->o.lisp_obj.o.primitive == 0 ? 'f' : 't');
+        t_stream_write_char(out, obj->o.primitive == 0 ? 'f' : 't');
         break;
 
     case TLISP_INTEGER:
