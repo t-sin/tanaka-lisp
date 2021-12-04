@@ -52,10 +52,7 @@ typedef struct tLispObject_t {
     } o;
 } tLispObject;
 
-#define TLISP_TYPE(obj) (obj->header.type & 0x7f)
-#define TLISP_MARKED(obj) (!!(obj->type & 0x80))
-#define TLISP_MARK(obj) (obj->type = obj->type | 0x80)
-#define TLISP_UNMARK(obj) (obj->type = obj->type & 0x7f)
+#define TLISP_TYPE(obj) (((tObjectHeader *)obj)->header.type)
 
 typedef struct tLispRuntime_t {
     tLispObject *toplevel_obj;
