@@ -36,10 +36,42 @@ void t_gc_terminate() {
     heap_free = NULL;
 }
 
-void gc_copy() {
+void gc_copy(void *root) {
 }
 
 void gc_collect() {
+    void *scan = heap_free = heap_to;
+
+    // copy roots
+    gc_copy(runtime.toplevel_obj);
+    gc_copy(runtime.stdin);
+    gc_copy(runtime.stdout);
+
+    while (scan != heap_free) {
+        switch (TLISP_TYPE(scan)) {
+        case TLISP_NULL:
+        case TLISP_NIL:
+        case TLISP_BOOL:
+        case TLISP_CHAR:
+        case TLISP_INTEGER:
+        case TLISP_FLOAT:
+            break;
+
+        case TLISP_STREAM: {
+                tLispObject *stream = (tLispObject *)scan;
+                stream->o.stream = gc_copy(stream->o.stream);
+            };
+            break;
+
+        case T_STREAM: {
+                // todo
+                break;
+            }
+    }
+
+    void *tmp = heap_from;
+    heap_from = heap_to;
+    heap_to = tmp;
 }
 
 void *gc_allocate(size_t size) {
