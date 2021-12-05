@@ -40,8 +40,8 @@ int is_pointer_to(void *ptr, void *heap) {
     return (heap <= ptr && ptr < heap + AREA_SIZE);
 }
 
-size_t calculate_size(void *obj) {
-    switch (TLISP_TYPE(obj)) {
+size_t calculate_size(int type) {
+    switch (type) {
     case TLISP_NULL:
     case TLISP_NIL:
     case TLISP_BOOL:
@@ -60,7 +60,7 @@ void *gc_copy(void *obj) {
     //printf("[gc] start copying obj = %p\n", obj);
 
     if (!is_pointer_to(((tObjectHeader *)obj)->forwarding, heap_to)) {
-        size_t size = calculate_size(obj);
+        size_t size = calculate_size(TLISP_TYPE(obj));
 
         memcpy(heap_free, obj, size);
         ((tObjectHeader *)obj)->forwarding = heap_free;
@@ -110,7 +110,7 @@ void gc_collect() {
             }
         }
 
-        scan += calculate_size(scan);
+        scan += calculate_size(TLISP_TYPE(scan));
     }
 
     void *tmp = heap_from;
@@ -138,7 +138,7 @@ void *gc_allocate(size_t size) {
 tLispObject *t_gc_allocate_nil();
 
 tLispObject *t_gc_allocate_bool(int v) {
-    size_t size = sizeof(tLispObject);
+    size_t size = calculate_size(TLISP_BOOL);
     tLispObject *obj = (tLispObject *)gc_allocate(size);
 
     obj->type = TLISP_BOOL;
@@ -149,7 +149,7 @@ tLispObject *t_gc_allocate_bool(int v) {
 tLispObject *t_gc_allocate_char(tChar v);
 
 tLispObject *t_gc_allocate_integer(tInt v) {
-    size_t size = sizeof(tLispObject);
+    size_t size = calculate_size(TLISP_INTEGER);
     tLispObject *obj = (tLispObject *)gc_allocate(size);
 
     obj->type = TLISP_INTEGER;
@@ -160,7 +160,7 @@ tLispObject *t_gc_allocate_integer(tInt v) {
 tLispObject *t_gc_allocate_float(tFloat v);
 
 tStream *t_gc_allocate_stream_obj() {
-    size_t size = sizeof(tStream) + sizeof(tByte) * STREAM_BUFFER_SIZE;
+    size_t size = calculate_size(T_STREAM);
     tStream *stream_obj = (tStream *)gc_allocate(size);
     memset(stream_obj, 0, size);
 
@@ -172,7 +172,7 @@ tStream *t_gc_allocate_stream_obj() {
 }
 
 tLispObject *t_gc_allocate_stream() {
-    size_t size = sizeof(tLispObject);
+    size_t size = calculate_size(TLISP_STREAM);
     tLispObject *stream = (tLispObject *)gc_allocate(size);
 
     stream->type = TLISP_STREAM;
