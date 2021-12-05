@@ -59,16 +59,16 @@ size_t calculate_size(int type) {
 void *gc_copy(void *obj) {
     //printf("[gc] start copying obj = %p\n", obj);
 
-    if (!is_pointer_to(((tObjectHeader *)obj)->forwarding, heap_to)) {
+    if (!is_pointer_to(((tObject *)obj)->forwarding, heap_to)) {
         size_t size = calculate_size(TLISP_TYPE(obj));
 
         memcpy(heap_free, obj, size);
-        ((tObjectHeader *)obj)->forwarding = heap_free;
+        ((tObject *)obj)->forwarding = heap_free;
 
         heap_free += size;
     }
 
-    return ((tObjectHeader *)obj)->forwarding;
+    return ((tObject *)obj)->forwarding;
 }
 
 void gc_collect() {
@@ -76,13 +76,13 @@ void gc_collect() {
 
     void *scan = heap_free = heap_to;
 
-    tObjectHeader **roots[] = {
-        (tObjectHeader **)&runtime.toplevel_obj,
-        (tObjectHeader **)&runtime.stdin,
-        (tObjectHeader **)&runtime.stdout,
+    tObject **roots[] = {
+        (tObject **)&runtime.toplevel_obj,
+        (tObject **)&runtime.stdin,
+        (tObject **)&runtime.stdout,
     };
     for (int i = 0; i < 3; i++) {
-        tObjectHeader **root = roots[i];
+        tObject **root = roots[i];
         if (*root != NULL) {
             *root = gc_copy(*root);
         }

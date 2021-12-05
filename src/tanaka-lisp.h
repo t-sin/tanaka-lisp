@@ -27,10 +27,10 @@ typedef enum {
 
 #define STREAM_BUFFER_SIZE 1024
 
-typedef struct tObjectHeader_t {
+typedef struct tObject_t {
     tByte type;
     void *forwarding;
-} tObjectHeader;
+} tObject;
 
 typedef struct tStreamTap_t {
     size_t head;
@@ -56,7 +56,7 @@ typedef struct tLispObject_t {
     } u;
 } tLispObject;
 
-#define TLISP_TYPE(obj) (((tObjectHeader *)obj)->type)
+#define TLISP_TYPE(obj) (((tObject *)obj)->type)
 
 typedef struct tLispRuntime_t {
     tLispObject *toplevel_obj;
