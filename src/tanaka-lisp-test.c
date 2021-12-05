@@ -1,9 +1,13 @@
 #include <stdio.h>
 
+#include "tanaka-lisp.h"
+
 #include "utf8.h"
 #include "stream.h"
 #include "string_repr.h"
 #include "garbage_collector.h"
+
+tLispRuntime runtime = {NULL, NULL, NULL};
 
 int main(int argc, char **argv) {
     printf("running tanaka-lisp tests...\n");

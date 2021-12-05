@@ -7,8 +7,6 @@
 #define STREAM_FULL -2
 #define STREAM_INVALID_UTF8_OCTETS -3
 
-tStream *make_stream();
-
 // Clear stream contents.
 void t_stream_clear(tStream *stream);
 

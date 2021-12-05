@@ -76,10 +76,17 @@ void gc_collect() {
 
     void *scan = heap_free = heap_to;
 
-    if (runtime.toplevel_obj != NULL)
-        runtime.toplevel_obj = gc_copy(runtime.toplevel_obj);
-    runtime.stdin = gc_copy(runtime.stdin);
-    runtime.stdout = gc_copy(runtime.stdout);
+    tObjectHeader **roots[] = {
+        (tObjectHeader **)&runtime.toplevel_obj,
+        (tObjectHeader **)&runtime.stdin,
+        (tObjectHeader **)&runtime.stdout,
+    };
+    for (int i = 0; i < 3; i++) {
+        tObjectHeader **root = roots[i];
+        if (*root != NULL) {
+            *root = gc_copy(*root);
+        }
+    }
 
     while (scan != heap_free) {
         switch (TLISP_TYPE(scan)) {

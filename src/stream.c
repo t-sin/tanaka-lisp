@@ -129,27 +129,43 @@ int t_stream_unread_char(tStream *stream, tChar ch);
 
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
+
+static tStream *make_stream(size_t head, size_t tail, tByte *content) {
+    tStream *stream = t_gc_allocate_stream_obj();
+    stream->head = head;
+    stream->tail = tail;
+    memcpy(stream->array, content, STREAM_BUFFER_SIZE);
+
+    return stream;
+}
 
 static void test_peek_1st_byte_from_empty_stream() {
-    tStream input = {0, 0};
+    tByte input_content[STREAM_BUFFER_SIZE] = {};
+    size_t input_head = 0;
+    size_t input_tail = 0;
     size_t nth = 0;
     int expected_ret = STREAM_EMPTY;
 
+    tStream *stream = make_stream(input_head, input_tail, input_content);
+
     tByte actual_byte;
-    int actual_ret = t_stream_peek_nth_byte(&input, nth, &actual_byte);
+    int actual_ret = t_stream_peek_nth_byte(stream, nth, &actual_byte);
 
     assert(actual_ret == expected_ret);
 }
 
 static void test_peek_2nd_byte_from_length1_stream() {
-    tByte input_buf[STREAM_BUFFER_SIZE] = {'a', 'b', 'c'};
-    tStream input = {1, 0};
-    input.array = input_buf;
+    tByte input_content[STREAM_BUFFER_SIZE] = {'a', 'b', 'c'};
+    size_t input_head = 1;
+    size_t input_tail = 0;
     size_t nth = 1;
     int expected_ret = STREAM_EMPTY;
 
+    tStream *stream = make_stream(input_head, input_tail, input_content);
+
     tByte actual_byte;
-    int actual_ret = t_stream_peek_nth_byte(&input, nth, &actual_byte);
+    int actual_ret = t_stream_peek_nth_byte(stream, nth, &actual_byte);
 
     assert(actual_ret == expected_ret);
 }
@@ -163,35 +179,43 @@ static void verify_peek_nth_byte(tStream *input, size_t nth, int expected_ret, t
 }
 
 static void test_peek_1st_byte() {
-    tByte input_buf[STREAM_BUFFER_SIZE] = {'a', 'b', 'c'};
-    tStream input = {input_buf, 1, 0};
+    tByte input_content[STREAM_BUFFER_SIZE] = {'a', 'b', 'c'};
+    size_t input_head = 1;
+    size_t input_tail = 0;
     size_t nth = 0;
     int expected_ret = 1;
     tByte expected_byte = 'a';
     size_t expected_tail = 0;
 
-    verify_peek_nth_byte(&input, nth, expected_ret, expected_byte);
-    assert(input.tail == expected_tail);
+    tStream *stream = make_stream(input_head, input_tail, input_content);
+    verify_peek_nth_byte(stream, nth, expected_ret, expected_byte);
+    assert(stream->tail == expected_tail);
 }
 
 static void test_peek_2nd_byte() {
-    tByte input_buf[STREAM_BUFFER_SIZE] = {'a', 'b', 'c'};
-    tStream input = {input_buf, 2, 0};
+    tByte input_content[STREAM_BUFFER_SIZE] = {'a', 'b', 'c'};
+    size_t input_head = 2;
+    size_t input_tail = 0;
     size_t nth = 1;
     int expected_ret = 1;
     tByte expected_byte = 'b';
     size_t expected_tail = 0;
 
-    verify_peek_nth_byte(&input, nth, expected_ret, expected_byte);
-    assert(input.tail == expected_tail);
+    tStream *stream = make_stream(input_head, input_tail, input_content);
+    verify_peek_nth_byte(stream, nth, expected_ret, expected_byte);
+    assert(stream->tail == expected_tail);
 }
 
 static void test_read_byte_from_empty_stream() {
-    tStream input = {NULL, 0, 0};
+    tByte input_content[STREAM_BUFFER_SIZE] = {};
+    size_t input_head = 0;
+    size_t input_tail = 0;
     int expected_ret = STREAM_EMPTY;
 
+    tStream *stream = make_stream(input_head, input_tail, input_content);
+
     tByte actual_byte;
-    int actual_ret = t_stream_read_byte(&input, &actual_byte);
+    int actual_ret = t_stream_read_byte(stream, &actual_byte);
 
     assert(actual_ret == expected_ret);
 }
@@ -205,45 +229,58 @@ static void verify_read_byte(tStream *input, int expected_ret, tByte expected_by
 }
 
 static void test_read_byte_one() {
-    tByte input_buf[STREAM_BUFFER_SIZE] = {'a', 0, 0};
-    tStream input = {input_buf, 1, 0};
+    tByte input_content[STREAM_BUFFER_SIZE] = {'a', 0, 0};
+    size_t input_head = 1;
+    size_t input_tail = 0;
     int expected_ret = 1;
     tByte expected_byte = 'a';
     size_t expected_tail = 1;
 
-    verify_read_byte(&input, expected_ret, expected_byte);
-    assert(input.tail == expected_tail);
+    tStream *stream = make_stream(input_head, input_tail, input_content);
+    verify_read_byte(stream, expected_ret, expected_byte);
+    assert(stream->tail == expected_tail);
 }
 
 static void test_write_byte_to_empty_stream() {
+    tByte input_content[STREAM_BUFFER_SIZE] = {};
+    size_t input_head = 0;
+    size_t input_tail = 0;
     tByte input_byte = 'a';
     int expected_ret = 1;
     size_t expected_head = 1;
     tByte expected_byte = 'a';
 
-    tByte stream_buf[STREAM_BUFFER_SIZE] = {};
-    tStream stream = {stream_buf, 0, 0};
-
-    int actual_ret = t_stream_write_byte(&stream, input_byte);
+    tStream *stream = make_stream(input_head, input_tail, input_content);
+    int actual_ret = t_stream_write_byte(stream, input_byte);
 
     assert(actual_ret == expected_ret);
-    assert(stream.head == expected_head);
-    assert(stream.array[stream.head - 1] == expected_byte);
+    assert(stream->head == expected_head);
+    assert(stream->array[stream->head - 1] == expected_byte);
 }
 
 static void test_write_byte_to_full_stream() {
-    tByte stream_buf[STREAM_BUFFER_SIZE] = {};
     // full stream := its head points to the previous element of its tail
-    tStream stream = {stream_buf, 12, 13};
+    tByte input_content[STREAM_BUFFER_SIZE] = {};
+    size_t input_head = 12;
+    size_t input_tail = 13;
     tByte input_byte = 'a';
     int expected_ret = STREAM_FULL;
 
-    int actual_ret = t_stream_write_byte(&stream, input_byte);
+    tStream *stream = make_stream(input_head, input_tail, input_content);
+    int actual_ret = t_stream_write_byte(stream, input_byte);
     assert(actual_ret == expected_ret);
 }
 
+static tStream * make_empty_stream() {
+    tByte initial_content[STREAM_BUFFER_SIZE] = {};
+    tStream *stream = make_stream(0, 0, initial_content);
+
+    return stream;
+}
+
 static void verify_peek_char(tByte *input, size_t size, int eret, tChar ech) {
-    tStream *stream = make_stream();
+    tStream *stream = make_empty_stream();
+
     for (int i = 0; i < size; i++) {
         t_stream_write_byte(stream, input[i]);
     }
@@ -296,8 +333,8 @@ static void test_peek_char_twice() {
     int expected_ret = 2;
     tChar expected_ch = 0x03bb;
 
+    tStream *stream = make_empty_stream();
     int len = sizeof(input) / sizeof(input[0]);
-    tStream *stream = make_stream();
     for (int i = 0; i < len; i++) {
         t_stream_write_byte(stream, input[i]);
     }
@@ -313,7 +350,8 @@ static void test_peek_char_twice() {
 }
 
 static void verify_read_char(tByte *input, size_t size, int eret, tChar ech) {
-    tStream *stream = make_stream();
+    tStream *stream = make_empty_stream();
+
     for (int i = 0; i < size; i++) {
         t_stream_write_byte(stream, input[i]);
     }
@@ -341,8 +379,9 @@ static void test_read_char_twice() {
     tChar expected_ch1 = 0x03bb;
     tChar expected_ch2 = 0x1f973;
 
+    tStream *stream = make_empty_stream();
+
     int len = sizeof(input) / sizeof(input[0]);
-    tStream *stream = make_stream();
     for (int i = 0; i < len; i++) {
         t_stream_write_byte(stream, input[i]);
     }
@@ -376,8 +415,7 @@ static void test_write_char_one() {
     tByte ebytes1[] = {0xe3, 0x81, 0x82};
     tByte *expected_bytes[1] = {ebytes1};
 
-    tStream *stream = make_stream();
-
+    tStream *stream = make_empty_stream();
     verify_write_char_patterns(stream, 1, input, expected_rets, expected_bytes);
 }
 
@@ -388,12 +426,13 @@ static void test_write_char_two() {
     tByte ebytes2[] = {0xf0, 0x9f, 0xa5, 0xb3};
     tByte *expected_bytes[2] = {ebytes1, ebytes2};
 
-    tStream *stream = make_stream();
-
+    tStream *stream = make_empty_stream();
     verify_write_char_patterns(stream, 1, input, expected_rets, expected_bytes);
 }
 
 void test_stream_all() {
+    t_gc_setup();
+
     test_peek_1st_byte_from_empty_stream();
     test_peek_2nd_byte_from_length1_stream();
     test_peek_1st_byte();
@@ -416,6 +455,8 @@ void test_stream_all() {
 
     test_write_char_one();
     test_write_char_two();
+
+    t_gc_terminate();
 
     printf("test: stream -> ok\n");
 }
