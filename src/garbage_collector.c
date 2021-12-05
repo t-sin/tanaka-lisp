@@ -50,7 +50,7 @@ size_t calculate_size(int type) {
     case TLISP_FLOAT:
         return sizeof(tPrimitive);
 
-    case T_STREAM:
+    case TLISP_STREAM:
         return sizeof(tStream) + sizeof(tByte) * STREAM_BUFFER_SIZE;
     }
 }
@@ -97,7 +97,7 @@ void gc_collect() {
         case TLISP_FLOAT:
             break;
 
-        case T_STREAM: {
+        case TLISP_STREAM: {
                 tStream *stream_obj = (tStream *)scan;
                 break;
             }
@@ -152,16 +152,16 @@ tPrimitive *t_gc_allocate_integer(tInt v) {
 
 tPrimitive *t_gc_allocate_float(tFloat v);
 
-tStream *t_gc_allocate_stream_obj() {
-    size_t size = calculate_size(T_STREAM);
-    tStream *stream_obj = (tStream *)gc_allocate(size);
-    memset(stream_obj, 0, size);
+tStream *t_gc_allocate_stream() {
+    size_t size = calculate_size(TLISP_STREAM);
+    tStream *stream = (tStream *)gc_allocate(size);
+    memset(stream, 0, size);
 
-    stream_obj->type = T_STREAM;
-    stream_obj->u.tap.head = 0;
-    stream_obj->u.tap.tail = 0;
+    stream->type = TLISP_STREAM;
+    stream->u.tap.head = 0;
+    stream->u.tap.tail = 0;
 
-    return stream_obj;
+    return stream;
 }
 
 #ifdef TANAKA_LISP_TEST

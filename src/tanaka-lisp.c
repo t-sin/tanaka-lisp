@@ -28,8 +28,8 @@ int main(int argc, char **argv) {
 
     t_gc_setup();
 
-    runtime.stdin = t_gc_allocate_stream_obj();
-    runtime.stdout = t_gc_allocate_stream_obj();
+    runtime.stdin = t_gc_allocate_stream();
+    runtime.stdout = t_gc_allocate_stream();
     int more_input_needed = 0;
 
     while (1) {

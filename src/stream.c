@@ -132,7 +132,7 @@ int t_stream_unread_char(tStream *stream, tChar ch);
 #include <string.h>
 
 static tStream *make_stream(size_t head, size_t tail, tByte *content) {
-    tStream *stream = t_gc_allocate_stream_obj();
+    tStream *stream = t_gc_allocate_stream();
     stream->u.tap.head = head;
     stream->u.tap.tail = tail;
     memcpy(stream->array, content, STREAM_BUFFER_SIZE);

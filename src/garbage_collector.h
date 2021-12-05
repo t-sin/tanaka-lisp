@@ -12,7 +12,7 @@ tPrimitive *t_gc_allocate_char(tChar v);
 tPrimitive *t_gc_allocate_integer(tInt v);
 tPrimitive *t_gc_allocate_float(tFloat v);
 
-tStream *t_gc_allocate_stream_obj();
+tStream *t_gc_allocate_stream();
 
 
 #ifdef TANAKA_LISP_TEST

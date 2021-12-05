@@ -21,8 +21,6 @@ typedef enum {
     TLISP_FLOAT = 0x05,
     // lisp objects
     TLISP_STREAM = 0x06,
-    // other types
-    T_STREAM = 0x0a,
 } tLispType;
 
 #define STREAM_BUFFER_SIZE 1024
