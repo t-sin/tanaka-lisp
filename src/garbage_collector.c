@@ -48,7 +48,6 @@ size_t calculate_size(int type) {
     case TLISP_CHAR:
     case TLISP_INTEGER:
     case TLISP_FLOAT:
-    case TLISP_STREAM:
         return sizeof(tPrimitive);
 
     case T_STREAM:
@@ -97,12 +96,6 @@ void gc_collect() {
         case TLISP_INTEGER:
         case TLISP_FLOAT:
             break;
-
-        case TLISP_STREAM: {
-                tPrimitive *stream = (tPrimitive *)scan;
-                stream->u.stream = gc_copy(stream->u.stream);
-                break;
-            }
 
         case T_STREAM: {
                 tStream *stream_obj = (tStream *)scan;
@@ -170,17 +163,6 @@ tStream *t_gc_allocate_stream_obj() {
 
     return stream_obj;
 }
-
-tPrimitive *t_gc_allocate_stream() {
-    size_t size = calculate_size(TLISP_STREAM);
-    tPrimitive *stream = (tPrimitive *)gc_allocate(size);
-
-    stream->type = TLISP_STREAM;
-    stream->u.stream = t_gc_allocate_stream_obj();
-
-    return stream;
-}
-
 
 #ifdef TANAKA_LISP_TEST
 #include <assert.h>

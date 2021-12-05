@@ -52,7 +52,6 @@ typedef struct tPrimitive_t {
     union {
         void *forwarding;
         uint64_t primitive;
-        tStream *stream;
     } u;
 } tPrimitive;
 
