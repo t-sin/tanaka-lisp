@@ -32,24 +32,28 @@ typedef struct tObjectHeader_t {
     void *forwarding;
 } tObjectHeader;
 
-#define tHeader tObjectHeader header
+typedef struct tStreamTap_t {
+    size_t head;
+    size_t tail;
+} tStreamTap;
 
 // The stream object. It treats binary data but can be read/write as characters.
 typedef struct tStream_t {
-    tHeader;
-
-    size_t head;
-    size_t tail;
+    tByte type;
+    union {
+        void *forwarding;
+        tStreamTap tap;
+    } u;
     tByte array[];
 } tStream;
 
 typedef struct tLispObject_t {
-    tHeader;
-
+    tByte type;
     union {
+        void *forwarding;
         uint64_t primitive;
         tStream *stream;
-    } o;
+    } u;
 } tLispObject;
 
 #define TLISP_TYPE(obj) (((tObjectHeader *)obj)->type)

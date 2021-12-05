@@ -94,7 +94,7 @@ int tLisp_read(tStream *in, tLispObject **out_obj) {
             }
 
             num += ret;
-            (*out_obj)->o.primitive = -(*out_obj)->o.primitive;
+            (*out_obj)->u.primitive = -(*out_obj)->u.primitive;
 
         } else {
             return num;
@@ -107,7 +107,7 @@ int tLisp_read(tStream *in, tLispObject **out_obj) {
 #define PRINT_BUFFER_SIZE 1024
 
 static void print_integer(tStream *out, tLispObject *obj) {
-    tInt n = obj->o.primitive;
+    tInt n = obj->u.primitive;
 
     if (n == 0) {
         t_stream_write_byte(out, '0');
@@ -138,7 +138,7 @@ void tLisp_print(tStream *out, tLispObject *obj) {
     switch (TLISP_TYPE(obj)) {
     case TLISP_BOOL:
         t_stream_write_char(out, '#');
-        t_stream_write_char(out, obj->o.primitive == 0 ? 'f' : 't');
+        t_stream_write_char(out, obj->u.primitive == 0 ? 'f' : 't');
         break;
 
     case TLISP_INTEGER:

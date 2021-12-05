@@ -6,16 +6,16 @@
 #include "stream.h"
 
 void t_stream_clear(tStream *stream) {
-    stream->tail = stream->head;
+    stream->u.tap.tail = stream->u.tap.head;
 }
 
 size_t t_stream_count_bytes(tStream *stream) {
-    if (stream->head == stream->tail) {
+    if (stream->u.tap.head == stream->u.tap.tail) {
         return 0;
-    } else if (stream->head > stream->tail) {
-        return stream->head - stream->tail;
+    } else if (stream->u.tap.head > stream->u.tap.tail) {
+        return stream->u.tap.head - stream->u.tap.tail;
     } else {
-        return stream->head + (STREAM_BUFFER_SIZE - stream->tail);
+        return stream->u.tap.head + (STREAM_BUFFER_SIZE - stream->u.tap.tail);
     }
 }
 
@@ -28,7 +28,7 @@ int t_stream_peek_nth_byte(tStream *stream, size_t n, tByte *out_byte) {
         return STREAM_EMPTY;
     }
 
-    *out_byte = stream->array[stream->tail + n];
+    *out_byte = stream->array[stream->u.tap.tail + n];
     return 1;
 }
 
@@ -41,8 +41,8 @@ int t_stream_read_byte(tStream *stream, tByte *out_byte) {
         return STREAM_EMPTY;
     }
 
-    *out_byte = stream->array[stream->tail];
-    proceed(&stream->tail);
+    *out_byte = stream->array[stream->u.tap.tail];
+    proceed(&stream->u.tap.tail);
 
     return 1;
 }
@@ -56,8 +56,8 @@ int t_stream_write_byte(tStream *stream, tByte byte) {
         return STREAM_FULL;
     }
 
-    stream->array[stream->head] = byte;
-    proceed(&stream->head);
+    stream->array[stream->u.tap.head] = byte;
+    proceed(&stream->u.tap.head);
 
     return 1;
 }
@@ -133,8 +133,8 @@ int t_stream_unread_char(tStream *stream, tChar ch);
 
 static tStream *make_stream(size_t head, size_t tail, tByte *content) {
     tStream *stream = t_gc_allocate_stream_obj();
-    stream->head = head;
-    stream->tail = tail;
+    stream->u.tap.head = head;
+    stream->u.tap.tail = tail;
     memcpy(stream->array, content, STREAM_BUFFER_SIZE);
 
     return stream;
@@ -189,7 +189,7 @@ static void test_peek_1st_byte() {
 
     tStream *stream = make_stream(input_head, input_tail, input_content);
     verify_peek_nth_byte(stream, nth, expected_ret, expected_byte);
-    assert(stream->tail == expected_tail);
+    assert(stream->u.tap.tail == expected_tail);
 }
 
 static void test_peek_2nd_byte() {
@@ -203,7 +203,7 @@ static void test_peek_2nd_byte() {
 
     tStream *stream = make_stream(input_head, input_tail, input_content);
     verify_peek_nth_byte(stream, nth, expected_ret, expected_byte);
-    assert(stream->tail == expected_tail);
+    assert(stream->u.tap.tail == expected_tail);
 }
 
 static void test_read_byte_from_empty_stream() {
@@ -238,7 +238,7 @@ static void test_read_byte_one() {
 
     tStream *stream = make_stream(input_head, input_tail, input_content);
     verify_read_byte(stream, expected_ret, expected_byte);
-    assert(stream->tail == expected_tail);
+    assert(stream->u.tap.tail == expected_tail);
 }
 
 static void test_write_byte_to_empty_stream() {
@@ -254,8 +254,8 @@ static void test_write_byte_to_empty_stream() {
     int actual_ret = t_stream_write_byte(stream, input_byte);
 
     assert(actual_ret == expected_ret);
-    assert(stream->head == expected_head);
-    assert(stream->array[stream->head - 1] == expected_byte);
+    assert(stream->u.tap.head == expected_head);
+    assert(stream->array[stream->u.tap.head - 1] == expected_byte);
 }
 
 static void test_write_byte_to_full_stream() {
