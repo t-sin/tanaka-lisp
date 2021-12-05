@@ -8,7 +8,7 @@
 #include "stream.h"
 #include "string_repr.h"
 
-static int read_sharp(tStream *in, tLispObject **out_obj) {
+static int read_sharp(tStream *in, tPrimitive **out_obj) {
     int num = 0;
     tChar ch;
 
@@ -34,7 +34,7 @@ static int read_sharp(tStream *in, tLispObject **out_obj) {
     return num;
 }
 
-static int read_integer(tStream *in, tLispObject **out_obj) {
+static int read_integer(tStream *in, tPrimitive **out_obj) {
     int num = 0;
     tChar ch;
 
@@ -57,7 +57,7 @@ static int read_integer(tStream *in, tLispObject **out_obj) {
     }
 }
 
-int tLisp_read(tStream *in, tLispObject **out_obj) {
+int tLisp_read(tStream *in, tPrimitive **out_obj) {
     size_t num = 0;
     tChar ch;
     int ret;
@@ -106,7 +106,7 @@ int tLisp_read(tStream *in, tLispObject **out_obj) {
 
 #define PRINT_BUFFER_SIZE 1024
 
-static void print_integer(tStream *out, tLispObject *obj) {
+static void print_integer(tStream *out, tPrimitive *obj) {
     tInt n = obj->u.primitive;
 
     if (n == 0) {
@@ -132,7 +132,7 @@ static void print_integer(tStream *out, tLispObject *obj) {
     }
 }
 
-void tLisp_print(tStream *out, tLispObject *obj) {
+void tLisp_print(tStream *out, tPrimitive *obj) {
     assert(obj != NULL);
 
     switch (TLISP_TYPE(obj)) {

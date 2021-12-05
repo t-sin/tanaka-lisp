@@ -47,19 +47,19 @@ typedef struct tStream_t {
     tByte array[];
 } tStream;
 
-typedef struct tLispObject_t {
+typedef struct tPrimitive_t {
     tByte type;
     union {
         void *forwarding;
         uint64_t primitive;
         tStream *stream;
     } u;
-} tLispObject;
+} tPrimitive;
 
 #define TLISP_TYPE(obj) (((tObject *)obj)->type)
 
 typedef struct tLispRuntime_t {
-    tLispObject *toplevel_obj;
+    tPrimitive *toplevel_obj;
 
     tStream *stdin;
     tStream *stdout;

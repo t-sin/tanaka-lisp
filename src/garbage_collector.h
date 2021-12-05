@@ -6,14 +6,14 @@
 void t_gc_setup();
 void t_gc_terminate();
 
-tLispObject *t_gc_allocate_nil();
-tLispObject *t_gc_allocate_bool(int v);
-tLispObject *t_gc_allocate_char(tChar v);
-tLispObject *t_gc_allocate_integer(tInt v);
-tLispObject *t_gc_allocate_float(tFloat v);
+tPrimitive *t_gc_allocate_nil();
+tPrimitive *t_gc_allocate_bool(int v);
+tPrimitive *t_gc_allocate_char(tChar v);
+tPrimitive *t_gc_allocate_integer(tInt v);
+tPrimitive *t_gc_allocate_float(tFloat v);
 
 tStream *t_gc_allocate_stream_obj();
-tLispObject *t_gc_allocate_stream();
+tPrimitive *t_gc_allocate_stream();
 
 
 #ifdef TANAKA_LISP_TEST

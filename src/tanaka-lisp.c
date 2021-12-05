@@ -10,7 +10,7 @@
 
 char *tlisp_version = "0.0.0";
 
-int tLisp_eval(tLispObject *obj, tLispObject **out_obj) {
+int tLisp_eval(tPrimitive *obj, tPrimitive **out_obj) {
     *out_obj = obj;
 
     return 0;

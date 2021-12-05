@@ -49,7 +49,7 @@ size_t calculate_size(int type) {
     case TLISP_INTEGER:
     case TLISP_FLOAT:
     case TLISP_STREAM:
-        return sizeof(tLispObject);
+        return sizeof(tPrimitive);
 
     case T_STREAM:
         return sizeof(tStream) + sizeof(tByte) * STREAM_BUFFER_SIZE;
@@ -99,7 +99,7 @@ void gc_collect() {
             break;
 
         case TLISP_STREAM: {
-                tLispObject *stream = (tLispObject *)scan;
+                tPrimitive *stream = (tPrimitive *)scan;
                 stream->u.stream = gc_copy(stream->u.stream);
                 break;
             }
@@ -135,29 +135,29 @@ void *gc_allocate(size_t size) {
     return obj;
 }
 
-tLispObject *t_gc_allocate_nil();
+tPrimitive *t_gc_allocate_nil();
 
-tLispObject *t_gc_allocate_bool(int v) {
+tPrimitive *t_gc_allocate_bool(int v) {
     size_t size = calculate_size(TLISP_BOOL);
-    tLispObject *obj = (tLispObject *)gc_allocate(size);
+    tPrimitive *obj = (tPrimitive *)gc_allocate(size);
 
     obj->type = TLISP_BOOL;
     obj->u.primitive = v;
     return obj;
 }
 
-tLispObject *t_gc_allocate_char(tChar v);
+tPrimitive *t_gc_allocate_char(tChar v);
 
-tLispObject *t_gc_allocate_integer(tInt v) {
+tPrimitive *t_gc_allocate_integer(tInt v) {
     size_t size = calculate_size(TLISP_INTEGER);
-    tLispObject *obj = (tLispObject *)gc_allocate(size);
+    tPrimitive *obj = (tPrimitive *)gc_allocate(size);
 
     obj->type = TLISP_INTEGER;
     obj->u.primitive = v;
     return obj;
 }
 
-tLispObject *t_gc_allocate_float(tFloat v);
+tPrimitive *t_gc_allocate_float(tFloat v);
 
 tStream *t_gc_allocate_stream_obj() {
     size_t size = calculate_size(T_STREAM);
@@ -171,9 +171,9 @@ tStream *t_gc_allocate_stream_obj() {
     return stream_obj;
 }
 
-tLispObject *t_gc_allocate_stream() {
+tPrimitive *t_gc_allocate_stream() {
     size_t size = calculate_size(TLISP_STREAM);
-    tLispObject *stream = (tLispObject *)gc_allocate(size);
+    tPrimitive *stream = (tPrimitive *)gc_allocate(size);
 
     stream->type = TLISP_STREAM;
     stream->u.stream = t_gc_allocate_stream_obj();
