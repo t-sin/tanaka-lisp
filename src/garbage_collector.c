@@ -52,6 +52,12 @@ size_t calculate_size(int type) {
 
     case TLISP_STREAM:
         return sizeof(tStream) + sizeof(tByte) * STREAM_BUFFER_SIZE;
+
+    case TLISP_CONS:
+        return sizeof(tConsCell);
+
+    default:
+        return 0;
     }
 }
 
@@ -99,6 +105,13 @@ void gc_collect() {
 
         case TLISP_STREAM: {
                 tStream *stream_obj = (tStream *)scan;
+                break;
+            }
+
+        case TLISP_CONS: {
+                tConsCell *cons = (tConsCell *)scan;
+                cons->u.cell.car = gc_copy(cons->u.cell.car);
+                cons->u.cell.cdr = gc_copy(cons->u.cell.cdr);
                 break;
             }
         }
@@ -151,6 +164,17 @@ tPrimitive *t_gc_allocate_integer(tInt v) {
 }
 
 tPrimitive *t_gc_allocate_float(tFloat v);
+
+tConsCell *t_gc_allocate_cons(tObject *car, tObject *cdr) {
+    size_t size = calculate_size(TLISP_CONS);
+    tConsCell *cons = (tConsCell *)gc_allocate(size);
+
+    cons->type = TLISP_CONS;
+    cons->u.cell.car = car;
+    cons->u.cell.cdr = cdr;
+
+    return cons;
+}
 
 tStream *t_gc_allocate_stream() {
     size_t size = calculate_size(TLISP_STREAM);

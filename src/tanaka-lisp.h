@@ -21,6 +21,7 @@ typedef enum {
     TLISP_FLOAT = 0x05,
     // lisp objects
     TLISP_STREAM = 0x06,
+    TLISP_CONS = 0x07,
 } tLispType;
 
 #define STREAM_BUFFER_SIZE 1024
@@ -29,6 +30,17 @@ typedef struct tObject_t {
     tByte type;
     void *forwarding;
 } tObject;
+
+typedef struct tConsCell_t {
+    tByte type;
+    union {
+        void *forwarding;
+        struct {
+            tObject *car;
+            tObject *cdr;
+        } cell;
+    } u;
+} tConsCell;
 
 typedef struct tStreamTap_t {
     size_t head;
