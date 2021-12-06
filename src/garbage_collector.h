@@ -12,6 +12,7 @@ tPrimitive *t_gc_allocate_char(tChar v);
 tPrimitive *t_gc_allocate_integer(tInt v);
 tPrimitive *t_gc_allocate_float(tFloat v);
 
+tConsCell *t_gc_allocate_cons(tObject *car, tObject *cdr);
 tStream *t_gc_allocate_stream();
 
 
