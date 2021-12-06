@@ -107,6 +107,8 @@ void gc_collect() {
     }
 
     while (scan != heap_free) {
+        assert(scan - heap_to < heap_area_size);
+
         switch (TLISP_TYPE(scan)) {
         case TLISP_NULL:
         case TLISP_NIL:
@@ -129,7 +131,9 @@ void gc_collect() {
             }
         }
 
-        scan += calculate_size(TLISP_TYPE(scan));
+        size_t size = calculate_size(TLISP_TYPE(scan));
+        assert(size > 0);
+        scan += size;
     }
 
     void *tmp = heap_from;
