@@ -18,8 +18,11 @@ $(TEST_PROGRAM): $(TEST_OBJECT) $(OBJECTS)
 .PHONY: build
 build: clean $(PROGRAM)
 
+.PHONY: dbuild
+dbuild: CFLAGS += -g -O0 -fsanitize=address
+dbuild: build
+
 .PHONY: test
-test: $(TEST_PROGRAM)
 test: clean $(TEST_PROGRAM)
 	./$(TEST_PROGRAM)
 
