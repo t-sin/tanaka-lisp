@@ -6,31 +6,40 @@
 #include "tanaka-lisp.h"
 #include "garbage_collector.h"
 
-
-#define HEAP_SIZE (1024 * 10)
-#define AREA_SIZE (HEAP_SIZE / 2)
+static size_t heap_size = 0;
+static size_t heap_area_size = 0;
 
 static void *heap_from = NULL;
 static void *heap_to = NULL;
 static void *heap_free = NULL;
 
+static void gc_setup(size_t size) {
+    heap_size = size;
+    heap_area_size = size / 2;
 
-void t_gc_setup() {
     int protect = PROT_READ | PROT_WRITE;
     int flags = MAP_PRIVATE | MAP_ANONYMOUS;
 
-    heap_from = mmap(NULL, AREA_SIZE, protect, flags, -1, 0);
-    heap_to = mmap(NULL, AREA_SIZE, protect, flags, -1, 0);
+    heap_from = mmap(NULL, heap_area_size, protect, flags, -1, 0);
+    heap_to = mmap(NULL, heap_area_size, protect, flags, -1, 0);
     heap_free = heap_from;
 
     assert(heap_from != NULL);
     assert(heap_to != NULL);
 }
 
-void t_gc_terminate() {
-    munmap(heap_from, AREA_SIZE);
-    munmap(heap_to, AREA_SIZE);
+#define HEAP_SIZE (1024 * 10)
 
+void t_gc_setup() {
+    gc_setup(HEAP_SIZE);
+}
+
+void t_gc_terminate() {
+    munmap(heap_from, heap_area_size);
+    munmap(heap_to, heap_area_size);
+
+    heap_size = 0;
+    heap_area_size = 0;
     heap_from = NULL;
     heap_to = NULL;
     heap_free = NULL;
@@ -58,7 +67,7 @@ size_t calculate_size(int type) {
 }
 
 int is_pointer_to(void *ptr, void *heap) {
-    return (heap <= ptr && ptr < heap + AREA_SIZE);
+    return (heap <= ptr && ptr < heap + heap_area_size);
 }
 
 void *gc_copy(void *obj) {
@@ -125,11 +134,11 @@ void gc_collect() {
 }
 
 void *gc_allocate(size_t size) {
-    if (heap_free + size > heap_from + AREA_SIZE) {
+    if (heap_free + size > heap_from + heap_area_size) {
         //printf("[gc] HEAP IS FULL!!!\n");
         gc_collect();
 
-        if (heap_free + size > heap_from + AREA_SIZE) {
+        if (heap_free + size > heap_from + heap_area_size) {
             //printf("[gc] HEAP IS FULL AFTER GC!!!\n");
             return NULL;
         }
@@ -191,6 +200,8 @@ tStream *t_gc_allocate_stream() {
 #ifdef TANAKA_LISP_TEST
 #include <assert.h>
 #include <stdio.h>
+
+
 
 void test_gc_all() {
     printf("test: gc -> ok\n");
