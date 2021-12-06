@@ -36,10 +36,6 @@ void t_gc_terminate() {
     heap_free = NULL;
 }
 
-int is_pointer_to(void *ptr, void *heap) {
-    return (heap <= ptr && ptr < heap + AREA_SIZE);
-}
-
 size_t calculate_size(int type) {
     switch (type) {
     case TLISP_NULL:
@@ -59,6 +55,10 @@ size_t calculate_size(int type) {
     default:
         return 0;
     }
+}
+
+int is_pointer_to(void *ptr, void *heap) {
+    return (heap <= ptr && ptr < heap + AREA_SIZE);
 }
 
 void *gc_copy(void *obj) {
