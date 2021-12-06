@@ -8,7 +8,7 @@
 #include "stream.h"
 #include "string_repr.h"
 
-static int read_sharp(tStream *in, tPrimitive **out_obj) {
+static int read_sharp(tStream *in, tObject **out_obj) {
     int num = 0;
     tChar ch;
 
@@ -20,11 +20,11 @@ static int read_sharp(tStream *in, tPrimitive **out_obj) {
 
     switch (ch) {
     case 'f':
-        *out_obj = t_gc_allocate_bool(0);
+        *out_obj = (tObject *)t_gc_allocate_bool(0);
         break;
 
     case 't':
-        *out_obj = t_gc_allocate_bool(1);
+        *out_obj = (tObject *)t_gc_allocate_bool(1);
         break;
 
     default:
@@ -34,7 +34,7 @@ static int read_sharp(tStream *in, tPrimitive **out_obj) {
     return num;
 }
 
-static int read_integer(tStream *in, tPrimitive **out_obj) {
+static int read_integer(tStream *in, tObject **out_obj) {
     int num = 0;
     tChar ch;
     tInt n = 0;
@@ -45,7 +45,7 @@ static int read_integer(tStream *in, tPrimitive **out_obj) {
             return READ_FAILED;
 
         } else if (ret < 0) {
-            *out_obj = t_gc_allocate_integer(n);
+            *out_obj = (tObject *)t_gc_allocate_integer(n);
             return num;
         }
 
@@ -56,7 +56,7 @@ static int read_integer(tStream *in, tPrimitive **out_obj) {
     }
 }
 
-int tLisp_read(tStream *in, tPrimitive **out_obj) {
+int tLisp_read(tStream *in, tObject **out_obj) {
     size_t num = 0;
     tChar ch;
     int ret;
@@ -97,7 +97,8 @@ int tLisp_read(tStream *in, tPrimitive **out_obj) {
             }
 
             num += ret;
-            (*out_obj)->u.primitive = -(*out_obj)->u.primitive;
+            tPrimitive **tmp = (tPrimitive **)out_obj;
+            (*tmp)->u.primitive = -(*tmp)->u.primitive;
 
             break;
 

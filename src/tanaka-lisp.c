@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
                 t_stream_write_byte(runtime.stdin, linebuf[i]);
             }
 
-            int ret = tLisp_read(runtime.stdin, &runtime.toplevel_obj);
+            int ret = tLisp_read(runtime.stdin, (tObject **)&runtime.toplevel_obj);
 
             if (ret == READ_MORE) {
                 more_input_needed = 1;
