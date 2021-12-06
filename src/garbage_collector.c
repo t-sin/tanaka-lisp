@@ -224,9 +224,67 @@ tStream *t_gc_allocate_stream() {
 #include <assert.h>
 #include <stdio.h>
 
+static void verify_gc_allocate(void *ptr, int nbytes, tByte *ibytes, size_t *epos, tByte *ebytes) {
+    for (int i = 0; i < nbytes; i++) {
+        tByte *byte = (tByte *)ptr;
+        byte[i] = ibytes[i];
+    }
 
+    for (int i = 0; i < nbytes; i++) {
+        tByte *byte = (tByte *)(ptr + sizeof(tByte) *i);
+        assert(byte != NULL);
+        assert((void *)byte - heap_from == epos[i]);
+        assert(*byte == ebytes[i]);
+    }
+}
+
+static void test_gc_allocate_1byte_from_4byte_heap() {
+    size_t heap_size = sizeof(tByte) * 4;
+    size_t input_size = sizeof(tByte);
+    tByte input_bytes[] = {42};
+    size_t expected_pos[] = {0};
+    tByte expected_bytes[] = {42};
+
+    gc_setup(heap_size);
+    void *ptr = gc_allocate(input_size);
+
+    verify_gc_allocate(ptr, 1, input_bytes, expected_pos, expected_bytes);
+
+    t_gc_terminate();
+}
+
+static void test_gc_allocate_2byte_from_4byte_heap() {
+    size_t heap_size = sizeof(tByte) * 4;
+    size_t input_size = sizeof(tByte) * 2;
+    tByte input_bytes[] = {42, 43};
+    size_t expected_pos[] = {0, 1};
+    tByte expected_bytes[] = {42, 43};
+
+    gc_setup(heap_size);
+    void *ptr = gc_allocate(input_size);
+
+    verify_gc_allocate(ptr, 2, input_bytes, expected_pos, expected_bytes);
+
+    t_gc_terminate();
+}
+
+static void test_gc_allocate_3byte_from_4byte_heap_fails() {
+    size_t heap_size = sizeof(tByte) * 4;
+    size_t input_size = sizeof(tByte) * 3;
+
+    gc_setup(heap_size);
+    void *ptr = gc_allocate(input_size);
+
+    assert(ptr == NULL);
+
+    t_gc_terminate();
+}
 
 void test_gc_all() {
+    test_gc_allocate_1byte_from_4byte_heap();
+    test_gc_allocate_2byte_from_4byte_heap();
+    test_gc_allocate_3byte_from_4byte_heap_fails();
+
     printf("test: gc -> ok\n");
 }
 #endif
