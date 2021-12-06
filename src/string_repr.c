@@ -138,17 +138,19 @@ static void print_integer(tStream *out, tPrimitive *obj) {
     }
 }
 
-void tLisp_print(tStream *out, tPrimitive *obj) {
+void tLisp_print(tStream *out, tObject *obj) {
     assert(obj != NULL);
 
     switch (TLISP_TYPE(obj)) {
-    case TLISP_BOOL:
-        t_stream_write_char(out, '#');
-        t_stream_write_char(out, obj->u.primitive == 0 ? 'f' : 't');
-        break;
+    case TLISP_BOOL: {
+            tPrimitive *o = (tPrimitive *)obj;
+            t_stream_write_char(out, '#');
+            t_stream_write_char(out, o->u.primitive == 0 ? 'f' : 't');
+            break;
+        }
 
     case TLISP_INTEGER:
-        print_integer(out, obj);
+        print_integer(out, (tPrimitive *)obj);
         break;
 
     default:

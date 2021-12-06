@@ -68,7 +68,7 @@ typedef struct tPrimitive_t {
 #define TLISP_TYPE(obj) (((tObject *)obj)->type)
 
 typedef struct tLispRuntime_t {
-    tPrimitive *toplevel_obj;
+    tObject *toplevel_obj;
 
     tStream *stdin;
     tStream *stdout;
