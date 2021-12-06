@@ -15,11 +15,12 @@ $(TEST_PROGRAM): $(TEST_OBJECT) $(OBJECTS)
 .c.o:
 	gcc $(CFLAGS) -c $<
 
-.PHONY: all
-all: $(PROGRAM)
+.PHONY: build
+build: clean $(PROGRAM)
 
 .PHONY: test
 test: $(TEST_PROGRAM)
+test: clean $(TEST_PROGRAM)
 	./$(TEST_PROGRAM)
 
 .PHONY: clean

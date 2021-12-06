@@ -1,6 +1,6 @@
-.PHONY: all
-all:
-	make -C src
+.PHONY: build
+build:
+	make -C src build
 
 .PHONY: test
 test:
