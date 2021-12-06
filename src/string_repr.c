@@ -37,7 +37,6 @@ static int read_sharp(tStream *in, tPrimitive **out_obj) {
 static int read_integer(tStream *in, tPrimitive **out_obj) {
     int num = 0;
     tChar ch;
-
     tInt n = 0;
 
     while (1) {
@@ -72,12 +71,16 @@ int tLisp_read(tStream *in, tPrimitive **out_obj) {
                 return ret;
             }
 
+            break;
+
         } else if (isdigit(ch)) {
             ret = read_integer(in, out_obj);
             if (ret <= 0) {
                 return ret;
             }
             num += ret;
+
+            break;
 
         } else if (ch == '-') {
             t_stream_read_char(in, &ch);
@@ -95,6 +98,8 @@ int tLisp_read(tStream *in, tPrimitive **out_obj) {
 
             num += ret;
             (*out_obj)->u.primitive = -(*out_obj)->u.primitive;
+
+            break;
 
         } else {
             return num;
