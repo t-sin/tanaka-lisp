@@ -8,6 +8,41 @@
 #include "stream.h"
 #include "string_repr.h"
 
+static int skip_spaces(tStream *in) {
+    tChar ch;
+    int num = 0;
+
+    while (1) {
+        int ret = t_stream_peek_char(in, &ch);
+        if (ret <= 0) {
+            return ret;
+
+        } else if (ch != ' ') {
+            return num;
+        }
+
+        t_stream_read_char(in, &ch);
+        num++;
+    }
+}
+
+static int consume_char(tStream *in, tChar c) {
+    tChar ch;
+    int ret;
+
+    ret = t_stream_peek_char(in, &ch);
+    if (ret <= 0) {
+        return ret;
+
+    } else if (ch != c) {
+        return READ_FAILED;
+    }
+
+    t_stream_read_char(in, &ch);
+
+    return ret;
+}
+
 static int read_sharp(tStream *in, tObject **out_obj) {
     int num = 0;
     tChar ch;
@@ -56,10 +91,57 @@ static int read_integer(tStream *in, tObject **out_obj) {
     }
 }
 
+static int read_dot_pair(tStream *in, tObject **out_obj) {
+    size_t num = 0;
+    tChar ch;
+    int ret;
+
+    tObject *car;
+    ret = tLisp_read(in, &car);
+    if (ret <= 0) {
+        return ret;
+    }
+    num += ret;
+
+    ret = skip_spaces(in);
+    if (ret <= 0) {
+        return ret;
+    }
+
+    ret = consume_char(in, '.');
+    if (ret <= 0) {
+        return ret;
+    }
+    num++;
+
+    tObject *cdr;
+    ret = tLisp_read(in, &cdr);
+    if (ret <= 0) {
+        return ret;
+    }
+    num += ret;
+
+    tConsCell *cons = t_gc_allocate_cons(car, cdr);
+    *out_obj = (tObject *)cons;
+
+    ret = consume_char(in, ')');
+    if (ret <= 0) {
+        return ret;
+    }
+    num++;
+
+    return num;
+}
+
 int tLisp_read(tStream *in, tObject **out_obj) {
     size_t num = 0;
     tChar ch;
     int ret;
+
+    ret = skip_spaces(in);
+    if (ret < 0) {
+        return READ_FAILED;
+    }
 
     while (ret = t_stream_peek_char(in, &ch), ret > 0) {
         if (ch == '#') {
@@ -70,6 +152,19 @@ int tLisp_read(tStream *in, tObject **out_obj) {
             if (ret <= 0) {
                 return ret;
             }
+
+            break;
+
+        } else if (ch == '(') {
+            t_stream_read_char(in, &ch);
+            num++;
+
+            ret = read_dot_pair(in, out_obj);
+            if (ret <= 0) {
+                return ret;
+            }
+
+            num += ret;
 
             break;
 
@@ -138,6 +233,18 @@ static void print_integer(tStream *out, tPrimitive *obj) {
     }
 }
 
+static void print_cons(tStream *out, tObject *obj) {
+    tConsCell *cons = (tConsCell *)obj;
+
+    t_stream_write_char(out, '(');
+    tLisp_print(out, cons->u.cell.car);
+    t_stream_write_char(out, ' ');
+    t_stream_write_char(out, '.');
+    t_stream_write_char(out, ' ');
+    tLisp_print(out, cons->u.cell.cdr);
+    t_stream_write_char(out, ')');
+}
+
 void tLisp_print(tStream *out, tObject *obj) {
     assert(obj != NULL);
 
@@ -151,6 +258,10 @@ void tLisp_print(tStream *out, tObject *obj) {
 
     case TLISP_INTEGER:
         print_integer(out, (tPrimitive *)obj);
+        break;
+
+    case TLISP_CONS:
+        print_cons(out, obj);
         break;
 
     default:
