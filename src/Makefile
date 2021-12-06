@@ -24,6 +24,6 @@ test: $(TEST_PROGRAM)
 
 .PHONY: clean
 clean:
-	@rm *.o
-	@rm $(PROGRAM)
-	@rm $(TEST_PROGRAM)
+	@rm -f *.o
+	@rm -f $(PROGRAM)
+	@rm -f $(TEST_PROGRAM)
