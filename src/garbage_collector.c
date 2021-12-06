@@ -71,7 +71,9 @@ int is_pointer_to(void *ptr, void *heap) {
 }
 
 void *gc_copy(void *obj) {
-    //printf("[gc] start copying obj = %p\n", obj);
+#ifdef TANAKA_DEBUG
+    printf("[gc] copy obj = %p\n", obj);
+#endif
 
     if (!is_pointer_to(((tObject *)obj)->forwarding, heap_to)) {
         size_t size = calculate_size(TLISP_TYPE(obj));
@@ -86,7 +88,9 @@ void *gc_copy(void *obj) {
 }
 
 void gc_collect() {
-    //printf("[gc] start collect garbages...\n");
+#ifdef TANAKA_DEBUG
+    printf("[gc] collecting garbages...\n");
+#endif
 
     void *scan = heap_free = heap_to;
 
@@ -131,22 +135,37 @@ void gc_collect() {
     void *tmp = heap_from;
     heap_from = heap_to;
     heap_to = tmp;
+
+#ifdef TANAKA_DEBUG
+    printf("[gc] garbage collected.\n");
+#endif
 }
 
 void *gc_allocate(size_t size) {
+#ifdef TANAKA_DEBUG
+    printf("[gc] allocating...\n");
+#endif
     if (heap_free + size > heap_from + heap_area_size) {
-        //printf("[gc] HEAP IS FULL!!!\n");
+#ifdef TANAKA_DEBUG
+        printf("[gc] HEAP IS FULL!!!\n");
+#endif
         gc_collect();
 
         if (heap_free + size > heap_from + heap_area_size) {
-            //printf("[gc] HEAP IS FULL AFTER GC!!!\n");
+#ifdef TANAKA_DEBUG
+            printf("[gc] HEAP IS FULL AFTER GC!!!\n");
+#endif
             return NULL;
         }
     }
 
-    //printf("[gc] %ld bytes allocated.\n", size);
     void *obj = heap_free;
     heap_free += size;
+
+#ifdef TANAKA_DEBUG
+    printf("[gc] %ld bytes allocated.\n", size);
+#endif
+
     return obj;
 }
 

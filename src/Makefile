@@ -19,7 +19,7 @@ $(TEST_PROGRAM): $(TEST_OBJECT) $(OBJECTS)
 build: clean $(PROGRAM)
 
 .PHONY: dbuild
-dbuild: CFLAGS += -g -O0 -fsanitize=address
+dbuild: CFLAGS += -D TANAKA_DEBUG -g -O0 -fsanitize=address
 dbuild: build
 
 .PHONY: test
