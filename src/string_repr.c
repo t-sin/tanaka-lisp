@@ -76,12 +76,15 @@ static int read_integer(tStream *in, tObject **out_obj) {
 
     while (1) {
         int ret = t_stream_peek_char(in, &ch);
-        if (!isdigit(ch)) {
+        if (ret < 0) {
             return READ_FAILED;
 
-        } else if (ret < 0) {
+        } else if (ret == 0 || ch == ' ' || ch == ')') {
             *out_obj = (tObject *)t_gc_allocate_integer(n);
             return num;
+
+        } else if (!isdigit(ch)) {
+            return READ_FAILED;
         }
 
         t_stream_read_char(in, &ch);
