@@ -173,7 +173,13 @@ void *gc_allocate(size_t size) {
     return obj;
 }
 
-tPrimitive *t_gc_allocate_nil();
+tPrimitive *t_gc_allocate_nil() {
+    size_t size = calculate_size(TLISP_NIL);
+    tPrimitive *obj = (tPrimitive *)gc_allocate(size);
+
+    obj->type = TLISP_NIL;
+    return obj;
+}
 
 tPrimitive *t_gc_allocate_bool(int v) {
     size_t size = calculate_size(TLISP_BOOL);

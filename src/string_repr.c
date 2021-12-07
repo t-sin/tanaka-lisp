@@ -99,6 +99,19 @@ static int read_dot_pair(tStream *in, tObject **out_obj) {
     tChar ch;
     int ret;
 
+    ret = t_stream_peek_char(in, &ch);
+    if (ret <= 0) {
+        return ret;
+    } else if (ch == ')') {
+        t_stream_read_char(in, &ch);
+        num++;
+
+        tPrimitive *nil = t_gc_allocate_nil();
+        *out_obj = (tObject *)nil;
+
+        return num;
+    }
+
     tObject *car;
     ret = tLisp_read(in, &car);
     if (ret <= 0) {
@@ -252,6 +265,11 @@ void tLisp_print(tStream *out, tObject *obj) {
     assert(obj != NULL);
 
     switch (TLISP_TYPE(obj)) {
+    case TLISP_NIL:
+        t_stream_write_char(out, '(');
+        t_stream_write_char(out, ')');
+        break;
+
     case TLISP_BOOL: {
             tPrimitive *o = (tPrimitive *)obj;
             t_stream_write_char(out, '#');
