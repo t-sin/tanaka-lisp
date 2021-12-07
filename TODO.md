@@ -11,8 +11,9 @@
     - [x] boolean values `#t` and `#f`
     - [x] integers
     - [ ] floating point numbers
-    - [ ] dot pairs
+    - [x] dot pairs
         - [x] garbage collection
+        - [x] `()`
     - [ ] proper lists
     - [ ] arrays
     - [ ] hash tables
