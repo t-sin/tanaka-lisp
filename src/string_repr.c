@@ -94,7 +94,7 @@ static int read_integer(tStream *in, tObject **out_obj) {
     }
 }
 
-static int read_dot_pair(tStream *in, tObject **out_obj) {
+static int read_paren(tStream *in, tObject **out_obj) {
     size_t num = 0;
     tChar ch;
     int ret;
@@ -177,7 +177,7 @@ int tLisp_read(tStream *in, tObject **out_obj) {
             t_stream_read_char(in, &ch);
             num++;
 
-            ret = read_dot_pair(in, out_obj);
+            ret = read_paren(in, out_obj);
             if (ret <= 0) {
                 return ret;
             }
