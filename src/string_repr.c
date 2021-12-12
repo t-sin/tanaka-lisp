@@ -124,27 +124,29 @@ static int read_dot_pair(tStream *in, tObject **out_obj) {
         return ret;
     }
 
-    ret = consume_char(in, '.');
+    ret = t_stream_peek_char(in, &ch);
     if (ret <= 0) {
         return ret;
-    }
-    num++;
+    } else if (ch == '.') {
+        t_stream_read_char(in, &ch);
+        num++;
 
-    tObject *cdr;
-    ret = tLisp_read(in, &cdr);
-    if (ret <= 0) {
-        return ret;
-    }
-    num += ret;
+        tObject *cdr;
+        ret = tLisp_read(in, &cdr);
+        if (ret <= 0) {
+            return ret;
+        }
+        num += ret;
 
-    tConsCell *cons = t_gc_allocate_cons(car, cdr);
-    *out_obj = (tObject *)cons;
+        tConsCell *cons = t_gc_allocate_cons(car, cdr);
+        *out_obj = (tObject *)cons;
 
-    ret = consume_char(in, ')');
-    if (ret <= 0) {
-        return ret;
+        ret = consume_char(in, ')');
+        if (ret <= 0) {
+            return ret;
+        }
+        num++;
     }
-    num++;
 
     return num;
 }
