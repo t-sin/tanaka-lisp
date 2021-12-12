@@ -15,7 +15,7 @@
         - [x] garbage collection
         - [x] `()`
     - [x] proper lists
-    - [ ] arrays
+    - [x] arrays
     - [ ] hash tables
     - [ ] symbols
     - [ ] keywords
