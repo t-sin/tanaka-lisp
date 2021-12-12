@@ -6,6 +6,9 @@
 void t_gc_setup();
 void t_gc_terminate();
 
+size_t calculate_struct_size(int type);
+size_t calculate_size(void *obj);
+
 tPrimitive *t_gc_allocate_nil();
 tPrimitive *t_gc_allocate_bool(int v);
 tPrimitive *t_gc_allocate_char(tChar v);
