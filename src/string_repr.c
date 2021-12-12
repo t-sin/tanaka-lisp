@@ -285,11 +285,29 @@ static void print_cons(tStream *out, tObject *obj) {
 
     t_stream_write_char(out, '(');
     tLisp_print(out, cons->u.cell.car);
-    t_stream_write_char(out, ' ');
-    t_stream_write_char(out, '.');
-    t_stream_write_char(out, ' ');
-    tLisp_print(out, cons->u.cell.cdr);
-    t_stream_write_char(out, ')');
+
+    while (1) {
+        switch (TLISP_TYPE(cons->u.cell.cdr)) {
+        case TLISP_NIL:
+            t_stream_write_char(out, ')');
+            return;
+
+        case TLISP_CONS:
+            cons = (tConsCell *)cons->u.cell.cdr;
+
+            t_stream_write_char(out, ' ');
+            tLisp_print(out, cons->u.cell.car);
+            continue;
+
+        default:
+            t_stream_write_char(out, ' ');
+            t_stream_write_char(out, '.');
+            t_stream_write_char(out, ' ');
+            tLisp_print(out, cons->u.cell.cdr);
+            t_stream_write_char(out, ')');
+            return;
+        }
+    }
 }
 
 void tLisp_print(tStream *out, tObject *obj) {
