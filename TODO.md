@@ -14,7 +14,7 @@
     - [x] dot pairs
         - [x] garbage collection
         - [x] `()`
-    - [ ] proper lists
+    - [x] proper lists
     - [ ] arrays
     - [ ] hash tables
     - [ ] symbols
