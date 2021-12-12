@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <stddef.h>
+#include <string.h>
 
 #include "tanaka-lisp.h"
 #include "garbage_collector.h"
@@ -43,6 +44,61 @@ static int consume_char(tStream *in, tChar c) {
     return ret;
 }
 
+#define ARRAY_BUFFER_SIZE 2048
+
+static int read_array(tStream *in, tObject **out_obj) {
+    int num = 0, ret;
+    tChar ch;
+
+    int count = 0;
+    tByte elem_type = TLISP_NULL;
+    tObject *objs[ARRAY_BUFFER_SIZE];
+
+    while (1) {
+        ret = skip_spaces(in);
+        if (ret < 0) {
+            return ret;
+        }
+        num += ret;
+
+        ret = t_stream_peek_char(in, &ch);
+        if (ret <= 0) {
+            return ret;
+
+        } else if (ch == ')') {
+            t_stream_read_char(in, &ch);
+            num++;
+
+            break;
+        }
+
+        ret = tLisp_read(in, &objs[count]);
+        if (ret <= 0) {
+            return ret;
+        }
+
+        if (count == 0) {
+            elem_type = TLISP_TYPE(objs[count]);
+
+        } else if (TLISP_TYPE(objs[count]) != elem_type) {
+            return READ_FAILED;
+        }
+
+        count++;
+    }
+
+    tArray *array = t_gc_allocate_array(elem_type, count);
+    void *body = array->body;
+    for (int i = 0; i < count; i++) {
+        size_t elem_size = calculate_size(objs[i]);
+        memcpy(body, objs[i], elem_size);
+        body += elem_size;
+    }
+    *out_obj = (tObject *)array;
+
+    return num;
+}
+
 static int read_sharp(tStream *in, tObject **out_obj) {
     int num = 0;
     tChar ch;
@@ -50,17 +106,34 @@ static int read_sharp(tStream *in, tObject **out_obj) {
     if (t_stream_peek_char(in, &ch) <= 0) {
         return READ_FAILED;
     }
-    t_stream_read_char(in, &ch);
-    num++;
 
     switch (ch) {
     case 'f':
+        t_stream_read_char(in, &ch);
+        num++;
+
         *out_obj = (tObject *)t_gc_allocate_bool(0);
         break;
 
     case 't':
+        t_stream_read_char(in, &ch);
+        num++;
+
         *out_obj = (tObject *)t_gc_allocate_bool(1);
         break;
+
+    case '(': {
+            t_stream_read_char(in, &ch);
+            num++;
+
+            int ret = read_array(in, out_obj);
+            if (ret < 0) {
+                return ret;
+            }
+            num += ret;
+
+            break;
+        }
 
     default:
         return READ_FAILED;
@@ -310,6 +383,24 @@ static void print_cons(tStream *out, tObject *obj) {
     }
 }
 
+static void print_array(tStream *out, tObject *obj) {
+    tArray *array = (tArray *)obj;
+
+    t_stream_write_char(out, '#');
+    t_stream_write_char(out, '(');
+
+    void *body = array->body;
+    for (int i = 0; i < array->u.header.num_elems; i++) {
+        if (i != 0) t_stream_write_char(out, ' ');
+
+        tObject *elem = (tObject *)body;
+        tLisp_print(out, elem);
+        body += calculate_size(elem);
+    }
+
+    t_stream_write_char(out, ')');
+}
+
 void tLisp_print(tStream *out, tObject *obj) {
     assert(obj != NULL);
 
@@ -332,6 +423,10 @@ void tLisp_print(tStream *out, tObject *obj) {
 
     case TLISP_CONS:
         print_cons(out, obj);
+        break;
+
+    case TLISP_ARRAY:
+        print_array(out, obj);
         break;
 
     default:
