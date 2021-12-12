@@ -146,9 +146,38 @@ static int read_paren(tStream *in, tObject **out_obj) {
             return ret;
         }
         num++;
-    }
 
-    return num;
+        return num;
+
+    } else {
+        tConsCell *cons = t_gc_allocate_cons(car, (tObject *)t_gc_allocate_nil());
+        tObject **tail = &(cons->u.cell.cdr);
+
+        while (1) {
+            ret = t_stream_peek_char(in, &ch);
+            if (ret <= 0) {
+                return ret;
+
+            } else if (ch == ')') {
+                t_stream_read_char(in, &ch);
+                num++;
+
+                *out_obj = (tObject *)cons;
+                return num;
+            }
+
+            tObject *elem;
+            ret = tLisp_read(in, &elem);
+            if (ret <= 0) {
+                return ret;
+            }
+            num += ret;
+
+            tConsCell *cons = t_gc_allocate_cons(elem, (tObject *)t_gc_allocate_nil());
+            *tail = (tObject *)cons;
+            tail = &(cons->u.cell.cdr);
+        }
+    }
 }
 
 int tLisp_read(tStream *in, tObject **out_obj) {
