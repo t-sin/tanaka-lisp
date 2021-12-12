@@ -45,7 +45,7 @@ void t_gc_terminate() {
     heap_free = NULL;
 }
 
-size_t calculate_size(int type) {
+size_t calculate_struct_size(int type) {
     switch (type) {
     case TLISP_NULL:
     case TLISP_NIL:
@@ -66,6 +66,22 @@ size_t calculate_size(int type) {
     }
 }
 
+size_t calculate_size(void *obj) {
+    switch (TLISP_TYPE(obj)) {
+    case TLISP_NULL:
+    case TLISP_NIL:
+    case TLISP_BOOL:
+    case TLISP_CHAR:
+    case TLISP_INTEGER:
+    case TLISP_FLOAT:
+    case TLISP_STREAM:
+        return calculate_struct_size(TLISP_TYPE(obj));
+
+    default:
+        return 0;
+    }
+}
+
 int is_pointer_to(void *ptr, void *heap) {
     return (heap <= ptr && ptr < heap + heap_area_size);
 }
@@ -76,7 +92,7 @@ void *gc_copy(void *obj) {
 #endif
 
     if (!is_pointer_to(((tObject *)obj)->forwarding, heap_to)) {
-        size_t size = calculate_size(TLISP_TYPE(obj));
+        size_t size = calculate_size(obj);
 
         memcpy(heap_free, obj, size);
         ((tObject *)obj)->forwarding = heap_free;
@@ -131,7 +147,7 @@ void gc_collect() {
             }
         }
 
-        size_t size = calculate_size(TLISP_TYPE(scan));
+        size_t size = calculate_size(scan);
         assert(size > 0);
         scan += size;
     }
@@ -174,7 +190,7 @@ void *gc_allocate(size_t size) {
 }
 
 tPrimitive *t_gc_allocate_nil() {
-    size_t size = calculate_size(TLISP_NIL);
+    size_t size = calculate_struct_size(TLISP_NIL);
     tPrimitive *obj = (tPrimitive *)gc_allocate(size);
 
     obj->type = TLISP_NIL;
@@ -182,7 +198,7 @@ tPrimitive *t_gc_allocate_nil() {
 }
 
 tPrimitive *t_gc_allocate_bool(int v) {
-    size_t size = calculate_size(TLISP_BOOL);
+    size_t size = calculate_struct_size(TLISP_BOOL);
     tPrimitive *obj = (tPrimitive *)gc_allocate(size);
 
     obj->type = TLISP_BOOL;
@@ -193,7 +209,7 @@ tPrimitive *t_gc_allocate_bool(int v) {
 tPrimitive *t_gc_allocate_char(tChar v);
 
 tPrimitive *t_gc_allocate_integer(tInt v) {
-    size_t size = calculate_size(TLISP_INTEGER);
+    size_t size = calculate_struct_size(TLISP_INTEGER);
     tPrimitive *obj = (tPrimitive *)gc_allocate(size);
 
     obj->type = TLISP_INTEGER;
@@ -204,7 +220,7 @@ tPrimitive *t_gc_allocate_integer(tInt v) {
 tPrimitive *t_gc_allocate_float(tFloat v);
 
 tConsCell *t_gc_allocate_cons(tObject *car, tObject *cdr) {
-    size_t size = calculate_size(TLISP_CONS);
+    size_t size = calculate_struct_size(TLISP_CONS);
     tConsCell *cons = (tConsCell *)gc_allocate(size);
 
     cons->type = TLISP_CONS;
@@ -215,7 +231,7 @@ tConsCell *t_gc_allocate_cons(tObject *car, tObject *cdr) {
 }
 
 tStream *t_gc_allocate_stream() {
-    size_t size = calculate_size(TLISP_STREAM);
+    size_t size = calculate_struct_size(TLISP_STREAM);
     tStream *stream = (tStream *)gc_allocate(size);
     memset(stream, 0, size);
 
