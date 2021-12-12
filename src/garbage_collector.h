@@ -14,7 +14,7 @@ tPrimitive *t_gc_allocate_float(tFloat v);
 
 tConsCell *t_gc_allocate_cons(tObject *car, tObject *cdr);
 tStream *t_gc_allocate_stream();
-
+tArray *t_gc_allocate_array(int type, size_t num);
 
 #ifdef TANAKA_LISP_TEST
 void test_gc_all();

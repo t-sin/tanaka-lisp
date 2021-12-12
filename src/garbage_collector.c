@@ -61,6 +61,9 @@ size_t calculate_struct_size(int type) {
     case TLISP_CONS:
         return sizeof(tConsCell);
 
+    case TLISP_ARRAY:
+        return sizeof(tArray);
+
     default:
         return 0;
     }
@@ -76,6 +79,14 @@ size_t calculate_size(void *obj) {
     case TLISP_FLOAT:
     case TLISP_STREAM:
         return calculate_struct_size(TLISP_TYPE(obj));
+
+    case TLISP_ARRAY: {
+            tArray *array = (tArray *)obj;
+            size_t struct_size = calculate_struct_size(TLISP_TYPE(obj));
+            size_t elem_size = calculate_struct_size(array->u.header.elem_type);
+            size_t num_elems = array->u.header.num_elems;
+            return struct_size + elem_size * num_elems;
+        }
 
     default:
         return 0;
@@ -240,6 +251,19 @@ tStream *t_gc_allocate_stream() {
     stream->u.tap.tail = 0;
 
     return stream;
+}
+
+tArray *t_gc_allocate_array(int type, size_t num) {
+    size_t size = calculate_struct_size(TLISP_ARRAY);
+    size += calculate_struct_size(type) * num;
+    tArray *array = (tArray *)gc_allocate(size);
+    memset(array, 0, size);
+
+    array->type = TLISP_ARRAY;
+    array->u.header.elem_type = type;
+    array->u.header.num_elems = num;
+
+    return array;
 }
 
 #ifdef TANAKA_LISP_TEST

@@ -22,6 +22,7 @@ typedef enum {
     // lisp objects
     TLISP_STREAM = 0x06,
     TLISP_CONS = 0x07,
+    TLISP_ARRAY = 0x08,
 } tLispType;
 
 #define STREAM_BUFFER_SIZE 1024
@@ -56,6 +57,18 @@ typedef struct tStream_t {
     } u;
     tByte array[];
 } tStream;
+
+typedef struct tArray_t {
+    tByte type;
+    union {
+        void *forwarding;
+        struct {
+            tByte elem_type;
+            size_t num_elems;
+        } header;
+    } u;
+    tByte body[];
+} tArray;
 
 typedef struct tPrimitive_t {
     tByte type;
