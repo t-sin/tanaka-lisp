@@ -23,6 +23,8 @@ typedef enum {
     TLISP_STREAM = 0x06,
     TLISP_CONS = 0x07,
     TLISP_ARRAY = 0x08,
+    TLISP_HASH_TABLE = 0x09,
+    TLISP_HASH_TABLE_ENTRY = 0x0a,
 } tLispType;
 
 #define STREAM_BUFFER_SIZE 1024
@@ -69,6 +71,29 @@ typedef struct tArray_t {
     } u;
     tByte body[];
 } tArray;
+
+typedef struct tHashTableEntry_t {
+    tByte type;
+    union {
+        void *forwarding;
+        struct {
+            uintptr_t key;
+            tObject *value;
+        } entry;
+    } u;
+} tHashTableEntry;
+
+typedef struct tHashTable_t {
+    tByte type;
+    union {
+        void *forwarding;
+        struct {
+            size_t size;
+            size_t num_elems;
+        } body;
+    } u;
+    tHashTableEntry table[];
+} tHashTable;
 
 typedef struct tPrimitive_t {
     tByte type;
