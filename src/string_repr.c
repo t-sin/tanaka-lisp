@@ -99,6 +99,52 @@ static int read_array(tStream *in, tObject **out_obj) {
     return num;
 }
 
+#define DEFAULT_HASH_TABLE_SIZE 1024
+
+static int read_hash_table(tStream *in, tObject **out_obj) {
+    int num = 0, ret;
+    tChar ch;
+
+    int count = 0;
+    while (1) {
+        ret = skip_spaces(in);
+        if (ret < 0) {
+            return ret;
+        }
+        num += ret;
+
+        ret = t_stream_peek_char(in, &ch);
+        if (ret <= 0) {
+            return ret;
+        } else if (ch == '}') {
+            t_stream_read_char(in, &ch);
+            num++;
+
+            break;
+        }
+
+        tObject *key, *value;
+        ret = tLisp_read(in, &key);
+        if (ret <= 0) {
+            return ret;
+        }
+        num += ret;
+
+        ret = tLisp_read(in, &value);
+        if (ret <= 0) {
+            return ret;
+        }
+        num += ret;
+
+        tHashTable *table = t_gc_allocate_hash_table(DEFAULT_HASH_TABLE_SIZE);
+        // hash_tableにセットの処理
+
+        *out_obj = (tObject *)table;
+    }
+
+    return num;
+}
+
 static int read_sharp(tStream *in, tObject **out_obj) {
     int num = 0;
     tChar ch;
@@ -127,6 +173,19 @@ static int read_sharp(tStream *in, tObject **out_obj) {
             num++;
 
             int ret = read_array(in, out_obj);
+            if (ret < 0) {
+                return ret;
+            }
+            num += ret;
+
+            break;
+        }
+
+    case '{': {
+            t_stream_read_char(in, &ch);
+            num++;
+
+            int ret = read_hash_table(in, out_obj);
             if (ret < 0) {
                 return ret;
             }
@@ -399,6 +458,17 @@ static void print_array(tStream *out, tObject *obj) {
     }
 
     t_stream_write_char(out, ')');
+}
+
+static void print_array(tStream *out, tObject *obj) {
+    tHashTable *table = (tHashTable *)obj;
+
+    t_stream_write_char(out, '#');
+    t_stream_write_char(out, '{');
+
+    tHashTableEntry *entry = table->table;
+
+    t_stream_write_char(out, '}');
 }
 
 void tLisp_print(tStream *out, tObject *obj) {
