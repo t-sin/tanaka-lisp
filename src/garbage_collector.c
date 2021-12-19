@@ -64,6 +64,12 @@ size_t calculate_struct_size(int type) {
     case TLISP_ARRAY:
         return sizeof(tArray);
 
+    case TLISP_HASH_TABLE_ENTRY:
+        return sizeof(tHashTableEntry);
+
+    case TLISP_HASH_TABLE:
+        return sizeof(tHashTable);
+
     default:
         return 0;
     }
@@ -78,6 +84,7 @@ size_t calculate_size(void *obj) {
     case TLISP_INTEGER:
     case TLISP_FLOAT:
     case TLISP_STREAM:
+    case TLISP_HASH_TABLE_ENTRY:
         return calculate_struct_size(TLISP_TYPE(obj));
 
     case TLISP_ARRAY: {
@@ -85,6 +92,14 @@ size_t calculate_size(void *obj) {
             size_t struct_size = calculate_struct_size(TLISP_TYPE(obj));
             size_t elem_size = calculate_struct_size(array->u.header.elem_type);
             size_t num_elems = array->u.header.num_elems;
+            return struct_size + elem_size * num_elems;
+        }
+
+    case TLISP_HASH_TABLE: {
+            tHashTable *table = (tHashTable *)obj;
+            size_t struct_size = calculate_struct_size(TLISP_TYPE(obj));
+            size_t elem_size = calculate_struct_size(TLISP_TYPE(&table[0]));
+            size_t num_elems = table->u.header.num_elems;
             return struct_size + elem_size * num_elems;
         }
 
