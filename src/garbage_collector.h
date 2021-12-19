@@ -19,6 +19,9 @@ tConsCell *t_gc_allocate_cons(tObject *car, tObject *cdr);
 tStream *t_gc_allocate_stream();
 tArray *t_gc_allocate_array(int type, size_t num);
 
+tHashTableEntry *t_gc_allocate_hash_table_entry();
+tHashTable *t_gc_allocate_hash_table(size_t num);
+
 #ifdef TANAKA_LISP_TEST
 void test_gc_all();
 #endif

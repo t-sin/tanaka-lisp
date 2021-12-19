@@ -281,6 +281,32 @@ tArray *t_gc_allocate_array(int type, size_t num) {
     return array;
 }
 
+
+tHashTableEntry *t_gc_allocate_hash_table_entry() {
+    size_t size = calculate_struct_size(TLISP_HASH_TABLE_ENTRY);
+    tHashTableEntry *entry = (tHashTableEntry *)gc_allocate(size);
+
+    entry->type = TLISP_HASH_TABLE_ENTRY;
+    entry->u.entry.key = 0;
+    entry->u.entry.value = NULL;
+
+    return entry;
+}
+
+tHashTable *t_gc_allocate_hash_table(size_t num) {
+    size_t size = calculate_struct_size(TLISP_HASH_TABLE);
+    size += calculate_struct_size(TLISP_HASH_TABLE_ENTRY) * num;
+    tHashTable *table = (tHashTable *)gc_allocate(size);
+    memset(table, 0, size);
+
+    table->type = TLISP_HASH_TABLE;
+    table->u.header.size = num;
+    table->u.header.num_elems = 0;
+
+    return table;
+}
+
+
 #ifdef TANAKA_LISP_TEST
 #include <assert.h>
 #include <stdio.h>
