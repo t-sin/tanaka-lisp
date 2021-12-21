@@ -8,6 +8,7 @@
 
 #include "stream.h"
 #include "string_repr.h"
+#include "hash_table.h"
 
 static int skip_spaces(tStream *in) {
     tChar ch;
@@ -143,7 +144,7 @@ static int read_hash_table(tStream *in, tObject **out_obj) {
         num += ret;
 
         tHashTable *table = t_gc_allocate_hash_table(DEFAULT_HASH_TABLE_SIZE);
-        // hash_tableにセットの処理
+        t_hash_table_put(table, key, value);
 
         *out_obj = (tObject *)table;
     }
@@ -466,13 +467,23 @@ static void print_array(tStream *out, tObject *obj) {
     t_stream_write_char(out, ')');
 }
 
+static tStream *stream_for_print_hash_table;
+
+static void print_hash_table_entry(tObject *key, tObject *value) {
+    tLisp_print(stream_for_print_hash_table, key);
+    t_stream_write_char(stream_for_print_hash_table, ' ');
+    tLisp_print(stream_for_print_hash_table, value);
+    t_stream_write_char(stream_for_print_hash_table, ' ');
+}
+
 static void print_hash_table(tStream *out, tObject *obj) {
     tHashTable *table = (tHashTable *)obj;
 
     t_stream_write_char(out, '#');
     t_stream_write_char(out, '{');
 
-    tHashTableEntry *entry = table->body;
+    stream_for_print_hash_table = out;
+    t_hash_table_traverse(table, print_hash_table_entry);
 
     t_stream_write_char(out, '}');
 }
@@ -504,7 +515,6 @@ void tLisp_print(tStream *out, tObject *obj) {
     case TLISP_ARRAY:
         print_array(out, obj);
         break;
-
 
     case TLISP_HASH_TABLE:
         print_hash_table(out, obj);
