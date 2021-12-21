@@ -99,7 +99,7 @@ static int read_array(tStream *in, tObject **out_obj) {
     return num;
 }
 
-#define DEFAULT_HASH_TABLE_SIZE 1024
+#define DEFAULT_HASH_TABLE_SIZE 256
 
 static int read_hash_table(tStream *in, tObject **out_obj) {
     int num = 0, ret;
