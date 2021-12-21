@@ -106,7 +106,8 @@ static int read_hash_table(tStream *in, tObject **out_obj) {
     int num = 0, ret;
     tChar ch;
 
-    int count = 0;
+    tHashTable *table = t_gc_allocate_hash_table(DEFAULT_HASH_TABLE_SIZE);
+
     while (1) {
         ret = skip_spaces(in);
         if (ret < 0) {
@@ -143,12 +144,11 @@ static int read_hash_table(tStream *in, tObject **out_obj) {
         }
         num += ret;
 
-        tHashTable *table = t_gc_allocate_hash_table(DEFAULT_HASH_TABLE_SIZE);
         t_hash_table_put(table, key, value);
-
-        *out_obj = (tObject *)table;
+        table->u.header.num_elems++;
     }
 
+    *out_obj = (tObject *)table;
     return num;
 }
 
