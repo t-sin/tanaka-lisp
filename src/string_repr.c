@@ -466,7 +466,7 @@ static void print_array(tStream *out, tObject *obj) {
     t_stream_write_char(out, '#');
     t_stream_write_char(out, '{');
 
-    tHashTableEntry *entry = table->table;
+    tHashTableEntry *entry = table->body;
 
     t_stream_write_char(out, '}');
 }

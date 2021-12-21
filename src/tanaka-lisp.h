@@ -90,9 +90,9 @@ typedef struct tHashTable_t {
         struct {
             size_t size;
             size_t num_elems;
-        } body;
+        } header;
     } u;
-    tHashTableEntry table[];
+    tHashTableEntry body[];
 } tHashTable;
 
 typedef struct tPrimitive_t {
