@@ -79,6 +79,7 @@ typedef struct tHashTableEntry_t {
         struct {
             uintptr_t key;
             tObject *value;
+            struct tHashTableEntry_t *next;
         } entry;
     } u;
 } tHashTableEntry;
