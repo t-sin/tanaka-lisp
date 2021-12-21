@@ -93,7 +93,7 @@ typedef struct tHashTable_t {
             size_t num_elems;
         } header;
     } u;
-    tHashTableEntry body[];
+    tHashTableEntry *body[];
 } tHashTable;
 
 typedef struct tPrimitive_t {

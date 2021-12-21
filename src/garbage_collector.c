@@ -295,7 +295,7 @@ tHashTableEntry *t_gc_allocate_hash_table_entry() {
 
 tHashTable *t_gc_allocate_hash_table(size_t num) {
     size_t size = calculate_struct_size(TLISP_HASH_TABLE);
-    size += calculate_struct_size(TLISP_HASH_TABLE_ENTRY) * num;
+    size += sizeof(tHashTableEntry *) * num;
     tHashTable *table = (tHashTable *)gc_allocate(size);
     memset(table, 0, size);
 
