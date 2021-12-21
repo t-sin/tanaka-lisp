@@ -460,7 +460,7 @@ static void print_array(tStream *out, tObject *obj) {
     t_stream_write_char(out, ')');
 }
 
-static void print_array(tStream *out, tObject *obj) {
+static void print_hash_table(tStream *out, tObject *obj) {
     tHashTable *table = (tHashTable *)obj;
 
     t_stream_write_char(out, '#');
@@ -497,6 +497,11 @@ void tLisp_print(tStream *out, tObject *obj) {
 
     case TLISP_ARRAY:
         print_array(out, obj);
+        break;
+
+
+    case TLISP_HASH_TABLE:
+        print_hash_table(out, obj);
         break;
 
     default:
