@@ -16,7 +16,7 @@
         - [x] `()`
     - [x] proper lists
     - [x] arrays
-    - [ ] hash tables
+    - [x] hash tables
     - [ ] symbols
     - [ ] keywords
 - [ ] special forms in REPL
