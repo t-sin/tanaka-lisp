@@ -217,7 +217,7 @@ static int read_integer(tStream *in, tObject **out_obj) {
         if (ret < 0) {
             return READ_FAILED;
 
-        } else if (ret == 0 || ch == ' ' || ch == ')') {
+        } else if (ret == 0 || ch == ' ' || ch == ')' || ch == '}') {
             *out_obj = (tObject *)t_gc_allocate_integer(n);
             return num;
 
