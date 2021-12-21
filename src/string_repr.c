@@ -130,6 +130,12 @@ static int read_hash_table(tStream *in, tObject **out_obj) {
         }
         num += ret;
 
+        ret = skip_spaces(in);
+        if (ret < 0) {
+            return ret;
+        }
+        num += ret;
+
         ret = tLisp_read(in, &value);
         if (ret <= 0) {
             return ret;
