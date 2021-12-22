@@ -43,7 +43,13 @@ int t_hash_table_put(tHashTable *table, void *key, tObject *value) {
 
     tHashTableEntry *entry = table->body[idx];
     while (entry != NULL) {
-        if (entry->u.entry.next == NULL) {
+        // TODO: compare with `eql`
+        if (entry->u.entry.key == k) {
+            entry->u.entry.value = value;
+
+            return HASHTABLE_SUCCESS;
+
+        } else if (entry->u.entry.next == NULL) {
             tHashTableEntry *new_entry = t_gc_allocate_hash_table_entry();
             new_entry->u.entry.key = k;
             new_entry->u.entry.value = value;
