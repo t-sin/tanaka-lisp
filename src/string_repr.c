@@ -468,12 +468,18 @@ static void print_array(tStream *out, tObject *obj) {
 }
 
 static tStream *stream_for_print_hash_table;
+static int is_first_element_in_hash_table;
 
 static void print_hash_table_entry(tObject *key, tObject *value) {
+    if (is_first_element_in_hash_table) {
+        is_first_element_in_hash_table = 0;
+    } else {
+        t_stream_write_char(stream_for_print_hash_table, ' ');
+    }
+
     tLisp_print(stream_for_print_hash_table, key);
     t_stream_write_char(stream_for_print_hash_table, ' ');
     tLisp_print(stream_for_print_hash_table, value);
-    t_stream_write_char(stream_for_print_hash_table, ' ');
 }
 
 static void print_hash_table(tStream *out, tObject *obj) {
@@ -483,6 +489,7 @@ static void print_hash_table(tStream *out, tObject *obj) {
     t_stream_write_char(out, '{');
 
     stream_for_print_hash_table = out;
+    is_first_element_in_hash_table = 1;
     t_hash_table_traverse(table, print_hash_table_entry);
 
     t_stream_write_char(out, '}');
