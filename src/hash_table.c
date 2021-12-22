@@ -1,21 +1,66 @@
 #include "tanaka-lisp.h"
 #include "garbage_collector.h"
+#include "equality.h"
 
 #define HASHTABLE_SUCCESS 0
 #define HASHTABLE_NOT_FOUND -1
 #define HASHTABLE_FULL -2
 
-size_t hash(uintptr_t key, size_t size) {
-    return key % size;
+size_t hash(tObject *obj, size_t size) {
+    size_t val;
+
+    switch (TLISP_TYPE(obj)) {
+    case TLISP_NIL:
+        val = TLISP_NIL;
+        break;
+
+    case TLISP_BOOL:
+        val = TLISP_BOOL + ((tPrimitive *)obj)->u.primitive;
+        break;
+
+    case TLISP_CHAR:
+        val = TLISP_CHAR + ((tPrimitive *)obj)->u.primitive;
+        break;
+
+    case TLISP_INTEGER:
+        val = TLISP_INTEGER + ((tPrimitive *)obj)->u.primitive;
+        break;
+
+    // case TLISP_FLOAT:
+    //     val = TLISP_FLOAT + ((tPrimitive *)obj)->u.primitive;
+    //     break;
+
+    case TLISP_STREAM:
+        val = TLISP_STREAM + (uintptr_t)obj;
+        break;
+
+    case TLISP_CONS: {
+            tConsCell *cons = (tConsCell *)obj;
+            val = TLISP_CONS + hash(cons->u.cell.car, size) + hash(cons->u.cell.car, size);
+            break;
+        }
+
+    case TLISP_ARRAY:
+        val = TLISP_ARRAY + (uintptr_t)obj;
+        break;
+
+    case TLISP_HASH_TABLE:
+        val = TLISP_ARRAY + (uintptr_t)obj;
+        break;
+
+    default:
+        val = 0;
+    }
+
+    return val % size;
 }
 
 int t_hash_table_find(tHashTable *table, void *key, tObject **out_value) {
-    uintptr_t k = (uintptr_t)key;
-    size_t idx = hash(k, table->u.header.size);
+    size_t idx = hash(key, table->u.header.size);
 
     tHashTableEntry *entry = table->body[idx];
     while (entry != NULL) {
-        if (entry->u.entry.key == k) {
+        if (t_equality_equal((tObject *)entry->u.entry.key, (tObject *)key)) {
             *out_value = entry->u.entry.value;
             return HASHTABLE_SUCCESS;
         }
@@ -27,12 +72,11 @@ int t_hash_table_find(tHashTable *table, void *key, tObject **out_value) {
 }
 
 int t_hash_table_put(tHashTable *table, void *key, tObject *value) {
-    uintptr_t k = (uintptr_t)key;
-    size_t idx = hash(k, table->u.header.size);
+    size_t idx = hash((tObject *)key, table->u.header.size);
 
     if (table->body[idx] == NULL) {
         tHashTableEntry *new_entry = t_gc_allocate_hash_table_entry();
-        new_entry->u.entry.key = k;
+        new_entry->u.entry.key = key;
         new_entry->u.entry.value = value;
         new_entry->u.entry.next = NULL;
 
@@ -43,15 +87,14 @@ int t_hash_table_put(tHashTable *table, void *key, tObject *value) {
 
     tHashTableEntry *entry = table->body[idx];
     while (entry != NULL) {
-        // TODO: compare with `eql`
-        if (entry->u.entry.key == k) {
+        if (t_equality_equal((tObject *)entry->u.entry.key, (tObject *)key)) {
             entry->u.entry.value = value;
 
             return HASHTABLE_SUCCESS;
 
         } else if (entry->u.entry.next == NULL) {
             tHashTableEntry *new_entry = t_gc_allocate_hash_table_entry();
-            new_entry->u.entry.key = k;
+            new_entry->u.entry.key = key;
             new_entry->u.entry.value = value;
             new_entry->u.entry.next = NULL;
 

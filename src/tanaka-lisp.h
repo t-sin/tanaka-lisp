@@ -77,7 +77,7 @@ typedef struct tHashTableEntry_t {
     union {
         void *forwarding;
         struct {
-            uintptr_t key;
+            void *key;
             tObject *value;
             struct tHashTableEntry_t *next;
         } entry;
